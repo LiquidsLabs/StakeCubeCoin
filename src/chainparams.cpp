@@ -688,6 +688,8 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
+        //start testnet seeds
+        vSeeds.emplace_back("144.91.104.91");
 
         // Testnet SCC addresses start with 'y'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);

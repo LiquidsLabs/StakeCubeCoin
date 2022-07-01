@@ -166,7 +166,6 @@ script: |
     cd installed
     rm -rf ${DISTNAME}/lib/pkgconfig
     find ${DISTNAME} -not -name "*.dbg"  -type f | sort | zip -X@ ${OUTDIR}/${DISTNAME}-${i//x86_64-w64-mingw32/win64}.zip
-    find ${DISTNAME} -name "*.dbg"  -type f | sort | zip -X@ ${OUTDIR}/${DISTNAME}-${i//x86_64-w64-mingw32/win64}-debug.zip
     cd ../../
     rm -rf distsrc-${i}
   done

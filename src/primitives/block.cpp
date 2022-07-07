@@ -22,10 +22,11 @@ uint256 CBlockHeader::GetHash() const
     ss << *this;
     if (nTime <= 1656006600) { //June 23 5:50pm GMT
             return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
-        } else {
+        } else if (nTime >= 1656006600 && nTime <= 1657209600) { //July 7 4:00pm GMT
             return HashX25X(BEGIN(nVersion), END(nNonce));
-            //return HashX22I(BEGIN(nVersion), END(nNonce));
-    }
+
+        }
+        return HashX22I(BEGIN(nVersion), END(nNonce));
 }
 
 

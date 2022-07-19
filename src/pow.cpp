@@ -134,7 +134,7 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     // Only change once per interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    if ((pindexLast->nHeight+1) % params.nPowAdjustedDiff != 0)
     {
         if (params.fPowAllowMinDifficultyBlocks)
         {
@@ -147,7 +147,7 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
             {
                 // Return the last non-special-min-difficulty-rules-block
                 const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                while (pindex->pprev && pindex->nHeight % params.nPowAdjustedDiff != 0 && pindex->nBits == nProofOfWorkLimit)
                     pindex = pindex->pprev;
                 return pindex->nBits;
             }

@@ -106,6 +106,7 @@ struct Params {
     uint32_t nRuleChangeActivationThreshold;
     // Default BIP9Deployment::nWindowSize value for deployments where it's not specified and for unknown deployments.
     uint32_t nMinerConfirmationWindow;
+    int nPowAdjustedDiff;
     BIP9Deployment vDeployments[MAX_VERSION_BITS_DEPLOYMENTS];
     /** Proof of work parameters */
     uint256 powLimit;

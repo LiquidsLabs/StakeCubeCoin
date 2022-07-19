@@ -197,6 +197,7 @@ public:
         consensus.nPowDGWHeight                = 2;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.nPowAdjustedDiff               = 3; //Retargeting every 3 blocks at the moment
 
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit        = 28;
@@ -439,6 +440,7 @@ public:
         consensus.nPowDGWHeight = 4002; // TODO: make sure to drop all spork6 related code on next testnet reset
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
@@ -606,6 +608,7 @@ public:
         consensus.nPowDGWHeight = 0;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
@@ -836,6 +839,7 @@ public:
         consensus.nPowDGWHeight = 34140; // same as mainnet
         consensus.nRuleChangeActivationThreshold = 108; // 75% for testchains
         consensus.nMinerConfirmationWindow = 144; // Faster than normal for regtest (144 instead of 2016)
+        consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;

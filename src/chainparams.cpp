@@ -195,6 +195,7 @@ public:
         consensus.fPowNoRetargeting            = false;
         consensus.nPowKGWHeight                = 1;
         consensus.nPowDGWHeight                = 2;
+        consensus.nPowSCCHeight                = 500000;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.nPowAdjustedDiff               = 3; //Retargeting every 3 blocks at the moment
@@ -436,8 +437,9 @@ public:
         consensus.nPowTargetSpacing = 2 * 60; // SCC: 2 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
-        consensus.nPowKGWHeight = 4002; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
-        consensus.nPowDGWHeight = 4002; // TODO: make sure to drop all spork6 related code on next testnet reset
+        consensus.nPowKGWHeight = 1550; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
+        consensus.nPowDGWHeight = 1551; // TODO: make sure to drop all spork6 related code on next testnet reset
+        consensus.nPowSCCHeight = 1552;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment
@@ -606,6 +608,7 @@ public:
         consensus.fPowNoRetargeting = false;
         consensus.nPowKGWHeight = 0; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
         consensus.nPowDGWHeight = 0;
+        consensus.nPowSCCHeight = 0;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment
@@ -837,6 +840,7 @@ public:
         consensus.fPowNoRetargeting = true;
         consensus.nPowKGWHeight = 15200; // same as mainnet
         consensus.nPowDGWHeight = 34140; // same as mainnet
+        consensus.nPowSCCHeight = 500000;
         consensus.nRuleChangeActivationThreshold = 108; // 75% for testchains
         consensus.nMinerConfirmationWindow = 144; // Faster than normal for regtest (144 instead of 2016)
         consensus.nPowAdjustedDiff         = 1; //Retargeting every block at the moment

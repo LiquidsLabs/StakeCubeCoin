@@ -193,9 +193,9 @@ public:
         consensus.nPowTargetSpacing            = 2 * 60; // 2 minutes  
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting            = false;
-        consensus.nPowKGWHeight                = 1;
-        consensus.nPowDGWHeight                = 2;
-        consensus.nPowSCCHeight                = 500000;
+        consensus.nPowKGWHeight                = INT_MAX;
+        consensus.nPowDGWHeight                = INT_MAX;
+        consensus.nPowSCCHeight                = 1;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.nPowAdjustedDiff               = 3; //Retargeting every 3 blocks at the moment
@@ -258,11 +258,11 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStart[0] = 0x06;
+        pchMessageStart[0] = 0x16;
         pchMessageStart[1] = 0x73;
         pchMessageStart[2] = 0x44;
         pchMessageStart[3] = 0x51;
-        nDefaultPort = 40000;
+        nDefaultPort = 40001;
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size = 5;
         m_assumed_chain_state_size = 5;
@@ -355,38 +355,7 @@ public:
         checkpointData = {
             {
                 // Launch checkpoints
-                {0,      uint256S("000001112c342e635d0e48db15505392e74b2cab902dff9243ade44939da5b47")},
-                {1,      uint256S("00000a3d1238b01735d6cce4f161c0f8afbf4e9da0d0a8b2cfe72e5714084dd7")},
-                // The SuperBlocks update
-                {1000,   uint256S("000000000000439832ca2a8c452fde2674646b39e720da9a253d3c072a2b52b9")},
-                {2000,   uint256S("0000000000002833bd22fb36b0ae5d0b756627bb2648f394b198461749140a42")},
-                {3000,   uint256S("000000000000c22d5d58d8c4e6db75d0b4d500ac1ba3d484e863b36514f1d1d7")},
-                {4000,   uint256S("000000000000a0d6d6e7be5e1a6168bc08ebea36394a840d7b3a9a0708f37748")},
-                {5000,   uint256S("0000000000005c73a59d7203ab44f08ea043d9ee1a8440d148435f17a8672c0d")},
-                {6000,   uint256S("000000000000031f3adff1ae73100663cce2ff648efe82b52466394132089e35")},
-                {6438,   uint256S("000000000000037f22b857984bbd520af912cbf24975c35815710bcb0d3ebb47")},
-                // The StakeCube Protocol (SCP) update
-                {10000,  uint256S("00000000000002f5a3089ba562fb42939756818b4e47f53fad042f6f734c5410")},
-                {20000,  uint256S("00000000000002742de1ac4e218ccc68dba52976a07d46b4aaf2b8a09b27c020")},
-                {30000,  uint256S("000000000000038eb91445c2125d2fd5fbb6dadf5d9f07d3b55b310446773c5d")},
-                {40000,  uint256S("00000000000021718c8fc16f28e997b51cbe54cdc3a98f9b547143a41f8e85f6")},
-                {50000,  uint256S("0000000000001f3bd04b01d0f38274ea3b7c8baaa0fd2c61644cf268b8c19327")},
-                {60000,  uint256S("000000000000045f81b9960f202b6b01ee84c14c6f3a3f40b87208cb22c0352d")},
-                {70000,  uint256S("00000000000006d174130512a8b18e24a74fde341d4dcf1cd99c9e8a388e9059")},
-                {80000,  uint256S("0000000000002c62043577372f6d94aebd38960f8692809d2a06889e2299f3c9")},
-                {90000,  uint256S("00000000000004f7d71ff39d4d8deb45a353e6b9d2f2fc6050fe78d634ccc78a")},
-                {100000, uint256S("00000000000011e634d6f2351351cfdecce8210c4fd319b2b0a57fede65548b2")},
-                {105302, uint256S("00000000000006000db09a96981ed231c3bdabb6b12f2b113a6ae4a5af2cf292")},
-                // Pre-Rebase Major Fork blocks
-                {332700, uint256S("000000000000096b62af7c9d6270b73914acc63dc7cc1efc81c0ecc7260b3a5f")},
-                {337454, uint256S("00000000000047666318810cf56c9dae48e2aa458ec2a88b42c4d089aae0559d")},
-                // The Rebase Upgrade
-                {341600, uint256S("0000000000000030aeb5dabf699fc981569a48653183501b81a10eb3226e63d0")},
-                {351900, uint256S("0000000000001e9897473309a12dc708e119cf1d2ea5e81dd53782eaee017815")},
-                // Post-Rebase Minor Fork blocks
-                {352202, uint256S("0000000000001a7b4d26b3870ae73857a691b940e91db367496749f9f51d14f3")},
-                {352203, uint256S("0000000000000df4086a9ce561db70c9fc48e7ee10107d6df56accee3099a526")},
-                {352204, uint256S("0000000000000d5b73d6730cc0227f5291c76a05dda08328e70b0bd4ff1e0a59")}
+                {0,      uint256S("000001112c342e635d0e48db15505392e74b2cab902dff9243ade44939da5b47")}
                 // Some future update...
             }
         };

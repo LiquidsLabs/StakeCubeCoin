@@ -20,13 +20,10 @@ uint256 CBlockHeader::GetHash() const
     std::vector<unsigned char> vch(80);
     CVectorWriter ss(SER_GETHASH, PROTOCOL_VERSION, vch, 0);
     ss << *this;
-    if (nTime <= 1656006600) { //June 23 5:50pm GMT
+    if (nTime <= 1601898626) { //June 23 5:50pm GMT
             return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
-        } else if (nTime >= 1656006600 && nTime <= 1657209600) { //July 7 4:00pm GMT
-            return HashX25X(BEGIN(nVersion), END(nNonce));
-
-        }
-        return HashX22I(BEGIN(nVersion), END(nNonce));
+    }
+    return HashX22I(BEGIN(nVersion), END(nNonce));
 }
 
 

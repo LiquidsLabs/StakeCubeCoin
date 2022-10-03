@@ -141,7 +141,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, ::ChainActive().Tip(), nExtraNonce);
         }
-        if (pblock->IsProgPow()) {
+        if (pblock->IsProgPow(nHeight)) {
             while (nMaxTries > 0 && pblock->nNonce64 < nInnerLoopCount) {
                 uint256 mix_hash;
                 auto final_hash{progpow_hash_full(pblock->GetProgPowHeader(), mix_hash)};
@@ -766,7 +766,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
 
     result.pushKV("coinbase_payload", HexStr(pblock->vtx[0]->vExtraPayload));
 
-    if (pblock->IsProgPow()) {
+    if (pblock->IsProgPow(pblock->nHeight)) {
         static std::string lastHeader{};
         if (mapPPBlockTemplates.count(lastHeader) && ((pblock->nTime - 30) < mapPPBlockTemplates.at(lastHeader).nTime))
         {

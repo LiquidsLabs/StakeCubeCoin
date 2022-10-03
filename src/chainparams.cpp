@@ -200,7 +200,8 @@ public:
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
 
         /** Prog PoW **/
-        consensus.nPPSwitchTime = 1664565000; //Thursday, September 29, 2022 4:05:00 PM GMT
+	consensus.nPPSwitchHeight = 479675;
+        consensus.nPPSwitchTime = 1664742650; //Thursday, September 29, 2022 4:05:00 PM GMT
         consensus.nInitialPPDifficulty = 0x1d016e81;    // 10MH/s
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit        = 28;

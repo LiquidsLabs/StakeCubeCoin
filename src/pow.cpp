@@ -189,7 +189,7 @@ unsigned int GetNextWorkRequiredSCC(const CBlockIndex* pindexLast, const CBlockH
         return powLimit.GetCompact();
     }
 
-    if (pblock->IsProgPow()) {
+    if (pblock->IsProgPow(pblock->nHeight)) {
         const arith_uint256& bnTargetLimit = UintToArith256(consensus.powLimit);
         const int64_t& nTargetTimespan = consensus.nPowTargetTimespan;
 
@@ -279,11 +279,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
-    if (pblock->IsProgPow()) {
-        /*if (pindexLast->nTime < params.nPPSwitchTime) {
+    if (pblock->IsProgPow(pblock->nHeight)) {
+        if ((pindexLast->nHeight + 1) == Params().GetConsensus().nPPSwitchHeight) {
             // first ProgPOW block ever
             return params.nInitialPPDifficulty;
-        }*/ //test mine first block on initial diff
+        } //test mine first block on initial diff
         return GetNextWorkRequiredSCC(pindexLast, pblock); //set for progpow but can set later to replace DGW
     }
 
@@ -310,7 +310,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     uint32_t PastBlocksMin = PastSecondsMin / params.nPowTargetSpacing; // 36 blocks
     uint32_t PastBlocksMax = PastSecondsMax / params.nPowTargetSpacing; // 1008 blocks
 
-    if (pblock->IsProgPow()) {
+    if (pblock->IsProgPow(pblock->nHeight)) {
         if (pblock->nTime < params.nPPSwitchTime) {
             // transition to progpow happened recently, look for the first PP block
             const CBlockIndex *pindex = pindexLast;

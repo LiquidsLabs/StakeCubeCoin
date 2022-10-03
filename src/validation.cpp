@@ -982,7 +982,7 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
     }
 
     // Check the header
-    if(block.IsProgPow()) {
+    if(block.IsProgPow(nHeight)) {
         if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
     } else {
@@ -1934,7 +1934,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
     }
 
-    if (block.IsProgPow() && !fJustCheck) {
+    if (block.IsProgPow(pindex->nHeight) && !fJustCheck) {
         if (block.nHeight >= progpow::epoch_length*2000)
             return state.DoS(50, false, REJECT_INVALID, "invalid-progpow-epoch", false, "invalid epoch number");
 
@@ -3620,11 +3620,14 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     int nHeight = block.nHeight;
     if (fCheckPOW) {
         uint256 final_hash;
-        if (block.IsProgPow()) {
+        if (block.IsFirstProgPow()) {
+	    uint256 mix_hash;
+            final_hash = block.GetProgPowHashFull(mix_hash);
+        } else if (block.IsProgPow(nHeight)) {
             final_hash = block.GetProgPowHashLight();
         } else {
-            final_hash = block.GetHash();
-        }
+	    final_hash = block.GetHash();
+	}
         // Check proof of work matches claimed amount
         if (!CheckProofOfWork(final_hash, block.nBits, consensusParams))
             return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
@@ -3795,10 +3798,10 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
     // once ProgPow always ProgPow
-    if (pindexPrev && pindexPrev->nTime >= consensusParams.nPPSwitchTime && block.nTime < consensusParams.nPPSwitchTime)
+    if (pindexPrev && nHeight >= consensusParams.nPPSwitchHeight && block.nHeight < consensusParams.nPPSwitchHeight)
         return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
         
-    if (block.IsProgPow() && block.nHeight != nHeight)
+    if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.

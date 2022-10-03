@@ -204,7 +204,7 @@ public:
         nBits          = block.nBits;
         nNonce         = block.nNonce;
 
-        if (block.IsProgPow()) {
+        if (block.IsProgPow(nHeight)) {
             nHeight    = block.nHeight;
             nNonce64   = block.nNonce64;
             mix_hash   = block.mix_hash;
@@ -238,7 +238,7 @@ public:
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
-        if (block.IsProgPow()) {
+        if (block.IsProgPow(nHeight)) {
             block.nHeight    = nHeight;
             block.nNonce64   = nNonce64;
             block.mix_hash   = mix_hash;
@@ -403,7 +403,7 @@ public:
         READWRITE(obj.hashMerkleRoot);
         READWRITE(obj.nTime);
         READWRITE(obj.nBits);
-        if (obj.nTime > SCC_GEN_TIME && obj.nTime >= Params().GetConsensus().nPPSwitchTime) {
+        if (obj.nHeight >= Params().GetConsensus().nPPSwitchHeight) {
             READWRITE(obj.nNonce64);
             READWRITE(obj.mix_hash);
          } else {
@@ -422,7 +422,7 @@ public:
         block.hashMerkleRoot  = hashMerkleRoot;
         block.nTime           = nTime;
         block.nBits           = nBits;
-        if (block.IsProgPow()) {
+        if (block.IsProgPow(nHeight)) {
             block.nHeight    = nHeight;
             block.nNonce64   = nNonce64;
             block.mix_hash   = mix_hash;

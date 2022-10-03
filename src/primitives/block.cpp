@@ -12,7 +12,6 @@
 #include <streams.h>
 #include <tinyformat.h>
 
-uint32_t nPPSwitchTime = 1663848108;
 
 uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
     if (IsProgPow()) {
@@ -24,16 +23,19 @@ uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
 bool CBlockHeader::IsProgPow(int nHeight) const {
     // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
     // it is not possible to get Params()
-    if (nHeight > 0) {
+    if (nHeight >= Params().GetConsensus().nPPSwitchHeight) {
         return true;
     }
     return false;
 }
 
-uint256 CBlockHeader::GetPoWHash(int nHeight) const 
+uint256 CBlockHeader::GetPoWHash(int nHeight) const
 {
     uint256 powHash;
-    if (IsProgPow()) {
+    uint256 mix_hash;
+    if (IsFirstProgPow()) {
+        powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
+    } else if (IsProgPow()) {
         powHash = progpow_hash_light(GetProgPowHeader());
     } else if (nHeight == 0) {
         // genesis block
@@ -49,7 +51,7 @@ bool CBlockHeader::IsProgPow() const {
 }
 
 bool CBlockHeader::IsFirstProgPow() const {
-    return (IsProgPow() && nTime <= (Params().GetConsensus().nPPSwitchTime + 86400)); //1 day
+    return (IsProgPow() && nTime <= (Params().GetConsensus().nPPSwitchTime + 6000)); //1 day
 }
 
 CProgPowHeader CBlockHeader::GetProgPowHeader() const {

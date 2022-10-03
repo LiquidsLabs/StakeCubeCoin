@@ -12,7 +12,6 @@
 #include <serialize.h>
 #include <uint256.h>
 
-extern uint32_t nPPSwitchTime;
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
@@ -56,7 +55,7 @@ public:
         READWRITE(nBits);
         // SCC - ProgPoW
         // Return std 4byte, if ProgPoW return 8byte
-        if (IsProgPow()) {
+        if (IsProgPow(nHeight)) {
             READWRITE(nHeight);
             READWRITE(nNonce64);
             READWRITE(mix_hash);
@@ -146,7 +145,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-        if (IsProgPow()) {
+        if (IsProgPow(nHeight)) {
             block.nHeight    = nHeight;
             block.nNonce64   = nNonce64;
             block.mix_hash   = mix_hash;

@@ -141,5 +141,5 @@ struct Params {
 } // namespace Consensus
 
 #define SCC_GEN_TIME 1601898626
-#define SCC_POW_TIME 1663848108
+#define SCC_POW_TIME 1664825010
 #endif // BITCOIN_CONSENSUS_PARAMS_H

@@ -23,7 +23,7 @@ uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
 bool CBlockHeader::IsProgPow(int nHeight) const {
     // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
     // it is not possible to get Params()
-    if (nHeight >= Params().GetConsensus().nPPSwitchHeight) {
+    if (nHeight >= 479700) {
         return true;
     }
     return false;
@@ -47,11 +47,11 @@ uint256 CBlockHeader::GetPoWHash(int nHeight) const
 bool CBlockHeader::IsProgPow() const {
     // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
     // it is not possible to get Params()
-    return (nTime > SCC_GEN_TIME && nTime >= Params().GetConsensus().nPPSwitchTime);
+    return (nTime > SCC_GEN_TIME && nTime >= SCC_POW_TIME);
 }
 
 bool CBlockHeader::IsFirstProgPow() const {
-    return (IsProgPow() && nTime <= (Params().GetConsensus().nPPSwitchTime + 6000)); //1 day
+    return (IsProgPow() && nTime <= (SCC_POW_TIME + 86000)); //1 day
 }
 
 CProgPowHeader CBlockHeader::GetProgPowHeader() const {
@@ -82,8 +82,8 @@ uint256 CBlockHeader::GetProgPowHashLight() const {
 
 uint256 CBlockHeader::GetHash() const {
     uint256 powHash;
-    if (nTime > SCC_GEN_TIME && nTime >= Params().GetConsensus().nPPSwitchTime) {
-        if((nTime > SCC_GEN_TIME) && (nTime >= Params().GetConsensus().nPPSwitchTime + 86400)) {
+    if (nTime >= SCC_POW_TIME) {
+        if(nTime <= SCC_POW_TIME + 64000) {
             uint256 mix_hash = Params().GetConsensus().powLimit;
             powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
         } else {

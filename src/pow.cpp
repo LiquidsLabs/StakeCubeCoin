@@ -280,7 +280,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
 
     if (pblock->IsProgPow(pblock->nHeight)) {
-        if ((pindexLast->nHeight + 1) == Params().GetConsensus().nPPSwitchHeight) {
+        if ((pindexLast->nHeight + 1) == params.nPPSwitchHeight) {
             // first ProgPOW block ever
             return params.nInitialPPDifficulty;
         } //test mine first block on initial diff

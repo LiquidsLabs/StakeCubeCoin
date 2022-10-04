@@ -3799,8 +3799,8 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
     // once ProgPow always ProgPow
-    bool ProPowActive_context = nHeight > consensusParams.nPowPPHeight;
-    if (ProPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
+    bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
+    if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
         return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
 
     if (block.IsProgPow(nHeight) && block.nHeight != nHeight)

@@ -191,18 +191,14 @@ public:
         /** PoW **/
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // ~uint256(0) >> 20
         consensus.nPowTargetTimespan           = 24 * 60 * 60; // SCC: 1 day
-        consensus.nPowTargetSpacing            = 2 * 60; // 2 minutes  
+        consensus.nPowTargetSpacing            = 2 * 60; // 2 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting            = false;
         consensus.nPowKGWHeight                = 1;
         consensus.nPowDGWHeight                = 2;
+        consensus.nPowPPHeight                 = 480330; // Prog PoW | Note: change also in primitives/block.cpp
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
-
-        /** Prog PoW **/
-	consensus.nPPSwitchHeight = 480150;
-        consensus.nPPSwitchTime = 1664878908; //Thursday, September 29, 2022 4:05:00 PM GMT
-        consensus.nInitialPPDifficulty = 0x1d016e81;    // 10MH/s
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit        = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
@@ -251,10 +247,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nFalloffCoeff   = 5; // this corresponds to 10 periods
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000007c4a7a82d260897efa");  // Blk 352,204
+        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000008f60f4441b459cf027");  // Blk 480,000
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0000000000000d5b73d6730cc0227f5291c76a05dda08328e70b0bd4ff1e0a59"); // Blk 352,204
+        consensus.defaultAssumeValid = uint256S("00000000000022734b9313dfe1a7a5639f6678f3953642c28751c8d379c2dd1e"); // Blk 480,000
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -280,9 +276,7 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("seed1.stakecube.net");
-        vSeeds.emplace_back("seed2.stakecube.net");
-        // Additional non-seeder connections
+
         vSeeds.emplace_back("144.91.104.91");
         vSeeds.emplace_back("207.180.235.194");
         vSeeds.emplace_back("62.171.137.83");
@@ -442,13 +436,9 @@ public:
         consensus.fPowNoRetargeting = false;
         consensus.nPowKGWHeight = 2; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
         consensus.nPowDGWHeight = 1; // TODO: make sure to drop all spork6 related code on next testnet reset
+        consensus.nPowPPHeight  = 3; // Prog PoW
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
-
-        /** Prog PoW **/
-	consensus.nPPSwitchHeight = 1;
-        consensus.nPPSwitchTime = 1664100000;      //Thursday, September 22, 2022 12:01:48 PM     
-        consensus.nInitialPPDifficulty = 0x1d016e81;    // 10MH/s
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
@@ -615,14 +605,9 @@ public:
         consensus.fPowNoRetargeting = false;
         consensus.nPowKGWHeight = 0; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
         consensus.nPowDGWHeight = 0;
+        consensus.nPowPPHeight  = 0; // Prog PoW
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
-        
-        //** Prog PoW **/
-        // this can be overridden with either -ppswitchtime or -ppswitchtimefromnow flags
-        consensus.nPPSwitchHeight = INT_MAX;
-	consensus.nPPSwitchTime = INT_MAX;
-        consensus.nInitialPPDifficulty = 0x2000ffff;
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008

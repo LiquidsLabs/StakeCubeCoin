@@ -17,7 +17,7 @@ static const int PROTOCOL_VERSION = 70222;
 static const int INIT_PROTO_VERSION = 209;
 
 //! disconnect from peers older than this proto version
-static const int MIN_PEER_PROTO_VERSION = 70222;
+static const int MIN_PEER_PROTO_VERSION = 70221;
 
 //! minimum proto version of masternode to accept in DKGs
 static const int MIN_MASTERNODE_PROTO_VERSION = 70219;
@@ -53,6 +53,9 @@ static const int ISDLOCK_PROTO_VERSION = 70220;
 
 //! GOVSCRIPT was activated in this version
 static const int GOVSCRIPT_PROTO_VERSION = 70221;
+
+//! minimum proto version of peers after progpow changeover
+static const int MIN_PP_PROTO_VERSION = 70222;
 
 // Make sure that none of the values above collide with `ADDRV2_FORMAT`.
 

@@ -403,7 +403,7 @@ public:
         READWRITE(obj.hashMerkleRoot);
         READWRITE(obj.nTime);
         READWRITE(obj.nBits);
-        if (obj.nHeight >= Params().GetConsensus().nPPSwitchHeight) {
+        if (obj.nHeight >= Params().GetConsensus().nPowPPHeight) {
             READWRITE(obj.nNonce64);
             READWRITE(obj.mix_hash);
          } else {

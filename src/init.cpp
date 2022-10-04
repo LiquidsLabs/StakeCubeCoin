@@ -1907,15 +1907,6 @@ bool AppInitMain(InitInterfaces& interfaces)
         nMaxOutboundLimit = gArgs.GetArg("-maxuploadtarget", DEFAULT_MAX_UPLOAD_TARGET)*1024*1024;
     }
 
-    // ********************************************************* Prepare ProgPow test in regtest mode
-    if (Params().NetworkIDString() == CBaseChainParams::REGTEST) {
-        Consensus::Params &mutableParams = const_cast<Consensus::Params &>(Params().GetConsensus());
-        if (gArgs.IsArgSet("-ppswitchtime"))
-            mutableParams.nPPSwitchTime = gArgs.GetArg("-ppswitchtime", INT_MAX);
-        else if (gArgs.IsArgSet("-ppswitchtimefromnow"))
-            mutableParams.nPPSwitchTime = gArgs.GetArg("-ppswitchtimefromnow", 0) + (uint32_t)GetTime();
-    }
-
     // ********************************************************* Step 7a: Load sporks
 
     uiInterface.InitMessage(_("Loading sporks cache..."));

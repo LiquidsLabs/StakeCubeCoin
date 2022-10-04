@@ -14,6 +14,41 @@
 
 arith_uint256 bnProofOfWorkProgPowLimit(~arith_uint256(0) >> 28);
 
+unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params) {
+    assert(pindexLast != nullptr);
+    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
+
+    // Only change once per interval
+    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    {
+        if (params.fPowAllowMinDifficultyBlocks)
+        {
+            // Special difficulty rule for testnet:
+            // If the new block's timestamp is more than 2* 2.5 minutes
+            // then allow mining of a min-difficulty block.
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+                return nProofOfWorkLimit;
+            else
+            {
+                // Return the last non-special-min-difficulty-rules-block
+                const CBlockIndex* pindex = pindexLast;
+                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                    pindex = pindex->pprev;
+                return pindex->nBits;
+            }
+        }
+        return pindexLast->nBits;
+    }
+
+    // Go back by what we want to be 1 day worth of blocks
+    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
+    assert(nHeightFirst >= 0);
+    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
+    assert(pindexFirst);
+
+   return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+}
+
 unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const Consensus::Params& params) {
     const CBlockIndex *BlockLastSolved = pindexLast;
     const CBlockIndex *BlockReading = pindexLast;
@@ -130,44 +165,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const Consens
     return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
-{
-    assert(pindexLast != nullptr);
-    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
-
-    // Only change once per interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
-    {
-        if (params.fPowAllowMinDifficultyBlocks)
-        {
-            // Special difficulty rule for testnet:
-            // If the new block's timestamp is more than 2* 2.5 minutes
-            // then allow mining of a min-difficulty block.
-            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
-                return nProofOfWorkLimit;
-            else
-            {
-                // Return the last non-special-min-difficulty-rules-block
-                const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
-                    pindex = pindex->pprev;
-                return pindex->nBits;
-            }
-        }
-        return pindexLast->nBits;
-    }
-
-    // Go back by what we want to be 1 day worth of blocks
-    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
-    assert(nHeightFirst >= 0);
-    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
-    assert(pindexFirst);
-
-   return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
-}
-
-unsigned int GetNextWorkRequiredSCC(const CBlockIndex* pindexLast, const CBlockHeader* pblock)
-{
+unsigned int ProgPow(const CBlockIndex* pindexLast, const CBlockHeader* pblock) {
     const Consensus::Params& consensus = Params().GetConsensus();
 
     if (consensus.fPowNoRetargeting)
@@ -198,8 +196,8 @@ unsigned int GetNextWorkRequiredSCC(const CBlockIndex* pindexLast, const CBlockH
             nActualSpacing = pindexLast->GetBlockTime() - pindexLast->pprev->GetBlockTime();
         if (nActualSpacing < 0)
             nActualSpacing = 1;
-	//if (nActualSpacing > consensus.nPowTargetSpacing*10)
-          //  nActualSpacing = consensus.nPowTargetSpacing*10;
+	    //if (nActualSpacing > consensus.nPowTargetSpacing*10)
+        //  nActualSpacing = consensus.nPowTargetSpacing*10;
 
         // ppcoin: target change every block
         // ppcoin: retarget with exponential moving toward target spacing
@@ -264,8 +262,7 @@ unsigned int GetNextWorkRequiredSCC(const CBlockIndex* pindexLast, const CBlockH
     return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
-{
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params) {
     assert(pindexLast != nullptr);
     assert(pblock != nullptr);
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
@@ -275,16 +272,24 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return bnPowLimit.GetCompact();
     }
 
+    // BTC algo
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
-    if (pblock->IsProgPow(pblock->nHeight)) {
-        if ((pindexLast->nHeight + 1) == params.nPPSwitchHeight) {
-            // first ProgPOW block ever
-            return params.nInitialPPDifficulty;
-        } //test mine first block on initial diff
-        return GetNextWorkRequiredSCC(pindexLast, pblock); //set for progpow but can set later to replace DGW
+    // KimotoGravityWell
+    if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
+        return KimotoGravityWell(pindexLast, params);
+    }
+
+    // DarkGravityWave
+    if (pindexLast->nHeight + 1 < params.nPowPPHeight) {
+        return DarkGravityWave(pindexLast, params);
+    }
+
+    // Hardcode diff at progpow switchover (asic -> gpu)
+    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
+        return 0x1d016e81;
     }
 
     // Note: GetNextWorkRequiredBTC has it's own special difficulty rule,
@@ -304,38 +309,17 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         }
     }
 
-    unsigned int TimeDaySeconds = 60 * 60 * 24;
+    /*unsigned int TimeDaySeconds = 60 * 60 * 24;
     int64_t PastSecondsMin = TimeDaySeconds * 0.25; // 21600
     int64_t PastSecondsMax = TimeDaySeconds * 7;// 604800
     uint32_t PastBlocksMin = PastSecondsMin / params.nPowTargetSpacing; // 36 blocks
-    uint32_t PastBlocksMax = PastSecondsMax / params.nPowTargetSpacing; // 1008 blocks
+    uint32_t PastBlocksMax = PastSecondsMax / params.nPowTargetSpacing; // 1008 blocks*/
 
-    if (pblock->IsProgPow(pblock->nHeight)) {
-        if (pblock->nTime < params.nPPSwitchTime) {
-            // transition to progpow happened recently, look for the first PP block
-            const CBlockIndex *pindex = pindexLast;
-            while (pindex && pindex->nTime >= params.nPPSwitchTime)
-                pindex = pindex->pprev;
-
-            if (pindex) {
-                uint32_t numberOfPPBlocks = pindexLast->nHeight - pindex->nHeight;
-                if (numberOfPPBlocks < params.DifficultyAdjustmentInterval()/2)
-                    // do not retarget if too few PP blocks
-                    return params.nInitialPPDifficulty;
-            }
-        }
-    }
-
-    if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
-        return KimotoGravityWell(pindexLast, params);
-    }
-
-    return DarkGravityWave(pindexLast, params);
+    return ProgPow(pindexLast, pblock); //set for progpow but can set later to replace DGW
 }
 
 // for DIFF_BTC only!
-unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
-{
+unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params) {
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
@@ -359,8 +343,7 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     return bnNew.GetCompact();
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
-{
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params) {
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;

@@ -1042,7 +1042,7 @@ CAmount GetBlockSubsidy(int nPrevHeight)
     int nHeight = nPrevHeight + 1;
 
     if (nHeight == 0) { nSubsidy = 0 * COIN;
-    } else if (nHeight == 1)                            { nSubsidy = 7500000 * COIN;    // Supply for swap (SCC 2x -> SCC 3x) 
+    } else if (nHeight == 1)                            { nSubsidy = 7500000 * COIN;    // Supply for swap (SCC 2x -> SCC 3x)
     } else if (nHeight > 1       && nHeight <= 5000)    { nSubsidy = 0.1 * COIN;        // Fair start ~7 days (5000/720 = 6,944444)
     } else if (nHeight > 5000    && nHeight <= 250000)  { nSubsidy = 9 * COIN;          // 1 year
     } else if (nHeight > 250000  && nHeight <= 500000)  { nSubsidy = 8 * COIN;
@@ -3620,14 +3620,15 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     int nHeight = block.nHeight;
     if (fCheckPOW) {
         uint256 final_hash;
-        if (block.IsFirstProgPow()) {
-	    uint256 mix_hash;
+        if (block.IsFirstProgPow(nHeight)) {
+	        uint256 mix_hash;
             final_hash = block.GetProgPowHashFull(mix_hash);
         } else if (block.IsProgPow(nHeight)) {
             final_hash = block.GetProgPowHashLight();
         } else {
-	    final_hash = block.GetHash();
-	}
+	        final_hash = block.GetHash();
+	    }
+
         // Check proof of work matches claimed amount
         if (!CheckProofOfWork(final_hash, block.nBits, consensusParams))
             return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
@@ -3754,7 +3755,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
             return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                             REJECT_INVALID, "bad-diffbits");
     } else {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams) && nHeight != params.GetConsensus().nPowPPHeight)
             return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect proof of work at %d", nHeight));
     }
 
@@ -3798,9 +3799,10 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
     // once ProgPow always ProgPow
-    if (pindexPrev && nHeight >= consensusParams.nPPSwitchHeight && block.nHeight < consensusParams.nPPSwitchHeight)
+    bool ProPowActive_context = nHeight > consensusParams.nPowPPHeight;
+    if (ProPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
         return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
-        
+
     if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
 

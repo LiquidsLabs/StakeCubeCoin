@@ -12,18 +12,17 @@
 #include <streams.h>
 #include <tinyformat.h>
 
+// We already set in chainparams, but need to put here again as
+// we can't get chainActive/mapBlockIndex in the consensus library
+// (without disabling binary hardening)..
+int nPowPPHeight = 480330;
 
-uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
-    if (IsProgPow()) {
-        return GetProgPowHashFull(mix_hash);
-    }
-    return GetHash();
+bool CBlockHeader::IsFirstProgPow(int nHeight) const {
+    return (IsProgPow(nHeight) && nHeight == nPowPPHeight);
 }
 
 bool CBlockHeader::IsProgPow(int nHeight) const {
-    // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
-    // it is not possible to get Params()
-    if (nHeight >= 480150) {
+    if (nTime > SCC_GEN_TIME && nHeight >= nPowPPHeight) {
         return true;
     }
     return false;
@@ -33,25 +32,17 @@ uint256 CBlockHeader::GetPoWHash(int nHeight) const
 {
     uint256 powHash;
     uint256 mix_hash;
-    if (IsFirstProgPow()) {
+    if (nHeight == nPowPPHeight) {
         powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
-    } else if (IsProgPow()) {
+    } else if (IsProgPow(nHeight)) {
         powHash = progpow_hash_light(GetProgPowHeader());
-    } else if (nHeight == 0) {
-        // genesis block
-        powHash = GetHash();
+    } else  {
+        std::vector<unsigned char> vch(80);
+        CVectorWriter ss(SER_GETHASH, PROTOCOL_VERSION, vch, 0);
+        ss << *this;
+        return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
     }
     return powHash;
-}
-
-bool CBlockHeader::IsProgPow() const {
-    // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
-    // it is not possible to get Params()
-    return (nTime > SCC_GEN_TIME && nTime >= SCC_POW_TIME);
-}
-
-bool CBlockHeader::IsFirstProgPow() const {
-    return (IsProgPow() && nTime <= (SCC_POW_TIME + 86000)); //1 day
 }
 
 CProgPowHeader CBlockHeader::GetProgPowHeader() const {
@@ -67,8 +58,7 @@ CProgPowHeader CBlockHeader::GetProgPowHeader() const {
     };
 }
 
-uint256 CBlockHeader::GetProgPowHeaderHash() const 
-{
+uint256 CBlockHeader::GetProgPowHeaderHash() const {
     return SerializeHash(GetProgPowHeader());
 }
 
@@ -81,21 +71,7 @@ uint256 CBlockHeader::GetProgPowHashLight() const {
 }
 
 uint256 CBlockHeader::GetHash() const {
-    uint256 powHash;
-    if (nTime >= SCC_POW_TIME) {
-        if(nTime <= SCC_POW_TIME + 64000) {
-            uint256 mix_hash = Params().GetConsensus().powLimit;
-            powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
-        } else {
-            powHash = progpow_hash_light(GetProgPowHeader());
-        }
-	return powHash;
-    } else {
-        std::vector<unsigned char> vch(80);
-        CVectorWriter ss(SER_GETHASH, PROTOCOL_VERSION, vch, 0);
-        ss << *this;
-        return HashX11((const char *)vch.data(), (const char *)vch.data() + vch.size());
-    }
+    return GetPoWHash(0);
 }
 
 std::string CBlock::ToString() const

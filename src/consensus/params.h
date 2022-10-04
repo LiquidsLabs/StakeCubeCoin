@@ -116,13 +116,8 @@ struct Params {
     int64_t nPowTargetTimespan;
     int nPowKGWHeight;
     int nPowDGWHeight;
+    int nPowPPHeight; // Switch to ProgPoW (PP)
     int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
-    
-    /** switch to ProgPoW (PP) time */
-    uint32_t nPPSwitchTime;
-    int nPPSwitchHeight;
-    /** initial difficulty for ProgPoW */
-    int nInitialPPDifficulty;
 
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
@@ -141,5 +136,4 @@ struct Params {
 } // namespace Consensus
 
 #define SCC_GEN_TIME 1601898626
-#define SCC_POW_TIME 1664878908
 #endif // BITCOIN_CONSENSUS_PARAMS_H

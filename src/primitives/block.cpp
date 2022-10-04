@@ -23,7 +23,7 @@ uint256 CBlockHeader::GetHashFull(uint256& mix_hash) const {
 bool CBlockHeader::IsProgPow(int nHeight) const {
     // In case if nTime == SCC_GEN_TIME we're being called from CChainParams() constructor and
     // it is not possible to get Params()
-    if (nHeight >= 479700) {
+    if (nHeight >= 480150) {
         return true;
     }
     return false;

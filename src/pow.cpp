@@ -349,8 +349,8 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bool fOverflow;
     arith_uint256 bnTarget;
 
-    CBlockIndex* pindexPrev = ::ChainActive().Tip();
-    if (pindexPrev->nHeight + 1 == params.nPowPPHeight) {
+    CBlockIndex* pindex = ::ChainActive().Tip();
+    if (pindex->nHeight == params.nPowPPHeight) {
         return true;
     }
 

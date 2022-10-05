@@ -1934,14 +1934,16 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
     }
 
-    if (block.IsProgPow(pindex->nHeight) && !fJustCheck) {
-        if (block.nHeight >= progpow::epoch_length*2000)
-            return state.DoS(50, false, REJECT_INVALID, "invalid-progpow-epoch", false, "invalid epoch number");
+    if(pindex->nHeight > chainparams.GetConsensus().nPowPPHeight) {
+        if (block.IsProgPow(pindex->nHeight) && !fJustCheck) {
+            if (block.nHeight >= progpow::epoch_length*2000)
+                return state.DoS(50, false, REJECT_INVALID, "invalid-progpow-epoch", false, "invalid epoch number");
 
-        uint256 exp_mix_hash, final_hash;
-        final_hash = block.GetProgPowHashFull(exp_mix_hash);
-        if (exp_mix_hash != block.mix_hash) {
-            return state.DoS(50, false, REJECT_INVALID, "invalid-mixhash", false, "mix_hash validity failed");
+            uint256 exp_mix_hash, final_hash;
+            final_hash = block.GetProgPowHashFull(exp_mix_hash);
+            if (exp_mix_hash != block.mix_hash) {
+                return state.DoS(50, false, REJECT_INVALID, "invalid-mixhash", false, "mix_hash validity failed");
+            }
         }
     }
 
@@ -3745,7 +3747,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
 
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
-    if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
+    if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 2){
         // architecture issues with DGW v1 and v2)
         unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
         double n1 = ConvertBitsToDouble(block.nBits);
@@ -3754,8 +3756,8 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         if (abs(n1-n2) > n1*0.5)
             return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                             REJECT_INVALID, "bad-diffbits");
-    } else {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams) && nHeight != params.GetConsensus().nPowPPHeight)
+    } else if (nHeight < params.GetConsensus().nPowPPHeight || nHeight > params.GetConsensus().nPowPPHeight + 1) {
+        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
             return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect proof of work at %d", nHeight));
     }
 
@@ -3798,13 +3800,15 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     AssertLockHeld(cs_main);
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
-    // once ProgPow always ProgPow
-    bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
-    if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
-        return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
+    if(nHeight > consensusParams.nPowPPHeight) {
+        // once ProgPow always ProgPow
+        bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
+        if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
+            return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
 
-    if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
-        return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
+        if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
+            return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
+    }
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.
     int nLockTimeFlags = 0;
@@ -3878,6 +3882,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
             pindex = miSelf->second;
             if (ppindex)
                 *ppindex = pindex;
+            //if ((pindex->nStatus & BLOCK_FAILED_MASK) && pindex->nHeight != chainparams.GetConsensus().nPowPPHeight)
             if (pindex->nStatus & BLOCK_FAILED_MASK)
                 return state.Invalid(error("%s: block %s is marked invalid", __func__, hash.ToString()), 0, "duplicate");
             if (pindex->nStatus & BLOCK_CONFLICT_CHAINLOCK)
@@ -3896,6 +3901,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
         pindexPrev = (*mi).second;
         assert(pindexPrev);
 
+        //if ((pindexPrev->nStatus & BLOCK_FAILED_MASK) && pindexPrev->nHeight + 1 != chainparams.GetConsensus().nPowPPHeight)
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
             return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
 
@@ -3925,6 +3931,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
          * In any case D3 will also be marked as BLOCK_FAILED_CHILD at restart
          * in LoadBlockIndex.
          */
+        //if (!pindexPrev->IsValid(BLOCK_VALID_SCRIPTS) && pindexPrev->nHeight + 1 != chainparams.GetConsensus().nPowPPHeight) {
         if (!pindexPrev->IsValid(BLOCK_VALID_SCRIPTS)) {
             // The above does not mean "invalid": it checks if the previous block
             // hasn't been validated up to BLOCK_VALID_SCRIPTS. This is a performance
@@ -3951,6 +3958,7 @@ bool BlockManager::AcceptBlockHeader(const CBlockHeader& block, CValidationState
             return state.DoS(10, error("%s: header %s conflicts with chainlock", __func__, hash.ToString()), REJECT_INVALID, "bad-chainlock");
         }
     }
+
     if (pindex == nullptr)
         pindex = AddToBlockIndex(block);
 

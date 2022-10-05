@@ -2464,7 +2464,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return false;
         }
 
-        if (pindexBestHeader->nHeight >= Params().GetConsensus().nPowPPHeight && nVersion < MIN_PP_PROTO_VERSION) {
+        /*if (pindexBestHeader->nHeight >= Params().GetConsensus().nPowPPHeight && nVersion < MIN_PP_PROTO_VERSION) {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
             if (enable_bip61) {
@@ -2473,7 +2473,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             }
             pfrom->fDisconnect = true;
             return false;
-        }
+        }*/
 
         if (!vRecv.empty())
             vRecv >> addrFrom >> nNonce;

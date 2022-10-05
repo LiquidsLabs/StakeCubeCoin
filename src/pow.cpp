@@ -272,7 +272,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return bnPowLimit.GetCompact();
     }
 
-    // BTC algo
+    // BTC diff
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
@@ -285,11 +285,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     // DarkGravityWave
     if (pindexLast->nHeight + 1 < params.nPowPPHeight) {
         return DarkGravityWave(pindexLast, params);
-    }
-
-    // Hardcode diff at progpow switchover (asic -> gpu)
-    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
-        return 0x1d016e81;
     }
 
     // Note: GetNextWorkRequiredBTC has it's own special difficulty rule,

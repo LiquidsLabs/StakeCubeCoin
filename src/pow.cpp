@@ -349,9 +349,13 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bool fOverflow;
     arith_uint256 bnTarget;
 
-    const CBlockIndex* block = LookupBlockIndex(hash);
-    if (block->nHeight == params.nPowPPHeight) {
-        return true;
+    const CBlockIndex* block;
+    {
+        LOCK(cs_main);
+        block = LookupBlockIndex(hash);
+        if (block->nHeight == params.nPowPPHeight) {
+            return true;
+        }
     }
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);

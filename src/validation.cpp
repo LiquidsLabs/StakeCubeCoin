@@ -965,9 +965,10 @@ static bool WriteBlockToDisk(const CBlock& block, FlatFilePos& pos, const CMessa
 
 bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::Params& consensusParams)
 {
+    int nHeight = block.nHeight;
     block.SetNull();
 
-    int nHeight = block.nHeight;
+    //int nHeight = block.nHeight;
     // Open history file to read
     CAutoFile filein(OpenBlockFile(pos, true), SER_DISK, CLIENT_VERSION);
     if (filein.IsNull())
@@ -984,9 +985,9 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
     // Check the header
     if(block.IsProgPow(nHeight)) {
         if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, block.nHeight))
-            return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+            return error("ReadBlockFromDisk: Errors in progpow block header at %s", pos.ToString());
     } else {
-    	if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, block.nHeight))
+    	if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, block.nHeight))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
     }
 return true;
@@ -998,6 +999,9 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
     {
         LOCK(cs_main);
         blockPos = pindex->GetBlockPos();
+    }
+    if(pindex->nHeight == consensusParams.nPowPPHeight + 1){
+        return true;
     }
 
     if (!ReadBlockFromDisk(block, blockPos, consensusParams))

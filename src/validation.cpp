@@ -983,10 +983,10 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
 
     // Check the header
     if(block.IsProgPow(nHeight)) {
-        if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams))
+        if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, block.nHeight))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
     } else {
-    	if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    	if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams, block.nHeight))
             return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
     }
 return true;
@@ -3632,7 +3632,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 	    }
 
         // Check proof of work matches claimed amount
-        if (!CheckProofOfWork(final_hash, block.nBits, consensusParams))
+        if (!CheckProofOfWork(final_hash, block.nBits, consensusParams, block.nHeight))
             return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
     }
     // Check DevNet

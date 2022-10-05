@@ -145,7 +145,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             while (nMaxTries > 0 && pblock->nNonce64 < nInnerLoopCount) {
                 uint256 mix_hash;
                 auto final_hash{progpow_hash_full(pblock->GetProgPowHeader(), mix_hash)};
-                if (CheckProofOfWork(final_hash, pblock->nBits, Params().GetConsensus()))
+                if (CheckProofOfWork(final_hash, pblock->nBits, Params().GetConsensus(), nHeight))
                 {
                     pblock->mix_hash = mix_hash;
                     break;
@@ -154,7 +154,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                 --nMaxTries;
             }
         } else {
-            while (nMaxTries > 0 && pblock->nNonce < std::numeric_limits<uint32_t>::max() && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus()) && !ShutdownRequested()) {
+            while (nMaxTries > 0 && pblock->nNonce < std::numeric_limits<uint32_t>::max() && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus(), nHeight) && !ShutdownRequested()) {
                 ++pblock->nNonce;
                 --nMaxTries;
             }
@@ -856,7 +856,7 @@ UniValue pprpcsb(const JSONRPCRequest& request)
     }
 
     // Check provided solution honors boundaries
-    if (!CheckProofOfWork(final_hash, blockptr->nBits, Params().GetConsensus()))
+    if (!CheckProofOfWork(final_hash, blockptr->nBits, Params().GetConsensus(), blockptr->nHeight))
     {
         throw JSONRPCError(RPC_INVALID_PARAMS, "Bad solution : not below target");
     }

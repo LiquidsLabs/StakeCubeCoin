@@ -3620,6 +3620,11 @@ static bool FindUndoPos(CValidationState &state, int nFile, FlatFilePos &pos, un
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
     int nHeight = block.nHeight;
+
+    if (nHeight == consensusParams.nPowPPHeight || nHeight == consensusParams.nPowPPHeight + 1) {
+        return true;
+    }
+
     if (fCheckPOW) {
         uint256 final_hash;
         if (block.IsFirstProgPow(nHeight)) {
@@ -3649,6 +3654,10 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW, bool fCheckMerkleRoot)
 {
     // These are checks that are independent of context.
+
+    if (block.nHeight == Params().GetConsensus().nPowPPHeight || block.nHeight == Params().GetConsensus().nPowPPHeight + 1) {
+        return true;
+    }
 
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 
@@ -4156,7 +4165,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
     AssertLockHeld(cs_main);
     assert(pindexPrev && pindexPrev == ::ChainActive().Tip());
 
-    if (block.nHeight == Params().GetConsensus().nPowPPHeight) {
+    if (block.nHeight == Params().GetConsensus().nPowPPHeight || block.nHeight == Params().GetConsensus().nPowPPHeight + 1) {
         return true;
     }
 

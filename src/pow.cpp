@@ -165,7 +165,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const Consens
     return bnNew.GetCompact();
 }
 
-unsigned int ProgPow(const CBlockIndex* pindexLast, const CBlockHeader* pblock) {
+unsigned int ProgPow(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params) {
     const Consensus::Params& consensus = Params().GetConsensus();
 
     if (consensus.fPowNoRetargeting)
@@ -310,7 +310,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     uint32_t PastBlocksMin = PastSecondsMin / params.nPowTargetSpacing; // 36 blocks
     uint32_t PastBlocksMax = PastSecondsMax / params.nPowTargetSpacing; // 1008 blocks*/
 
-    return ProgPow(pindexLast, pblock); //set for progpow but can set later to replace DGW
+    return ProgPow(pindexLast, pblock, params); //set for progpow but can set later to replace DGW
 }
 
 // for DIFF_BTC only!

@@ -349,7 +349,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bool fOverflow;
     arith_uint256 bnTarget;
 
-    CBlockIndex* block = LookupBlockIndex(hash);
+    const CBlockIndex* block = LookupBlockIndex(hash);
     if (block->nHeight == params.nPowPPHeight) {
         return true;
     }

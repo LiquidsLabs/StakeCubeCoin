@@ -4152,7 +4152,7 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
     AssertLockHeld(cs_main);
     assert(pindexPrev && pindexPrev == ::ChainActive().Tip());
 
-    if (pindexPrev->nHeight == Params().GetConsensus().nPowPPHeight) {
+    if (block.nHeight == Params().GetConsensus().nPowPPHeight) {
         return true;
     }
 

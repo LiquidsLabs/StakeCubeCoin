@@ -9,6 +9,7 @@
 #include <chain.h>
 #include <primitives/block.h>
 #include <uint256.h>
+#include <validation.h>
 
 #include <math.h>
 
@@ -288,7 +289,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
 
     // Hardcode diff at progpow switchover (asic -> gpu)
-    if (pindexLast->nHeight + 1 >= params.nPowPPHeight) {
+    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
         return 0x1d016e81;
     }
 
@@ -343,10 +344,15 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     return bnNew.GetCompact();
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params) {
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params, int nHeight) {
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;
+
+    CBlockIndex* pindexPrev = ::ChainActive().Tip();
+    if (pindexPrev->nHeight + 1 == params.nPowPPHeight) {
+        return true;
+    }
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 

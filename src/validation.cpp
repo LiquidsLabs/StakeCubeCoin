@@ -3632,8 +3632,8 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 	    }
 
         // Check proof of work matches claimed amount
-        //if (!CheckProofOfWork(final_hash, block.nBits, consensusParams))
-        //    return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
+        if (!CheckProofOfWork(final_hash, block.nBits, consensusParams))
+            return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
     }
     // Check DevNet
     if (!consensusParams.hashDevnetGenesisBlock.IsNull() &&
@@ -4151,6 +4151,10 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
 {
     AssertLockHeld(cs_main);
     assert(pindexPrev && pindexPrev == ::ChainActive().Tip());
+
+    if (pindexPrev->nHeight == Params().GetConsensus().nPowPPHeight) {
+        return true;
+    }
 
     uint256 hash = block.GetHash();
     if (llmq::chainLocksHandler->HasConflictingChainLock(pindexPrev->nHeight + 1, hash)) {

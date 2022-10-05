@@ -3745,6 +3745,10 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
+    if (nHeight == Params().GetConsensus().nPowPPHeight) {
+        return true;
+    }
+
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
     if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 2){

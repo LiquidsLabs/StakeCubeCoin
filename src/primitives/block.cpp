@@ -15,7 +15,7 @@
 // We already set in chainparams, but need to put here again as
 // we can't get chainActive/mapBlockIndex in the consensus library
 // (without disabling binary hardening)..
-int nPowPPHeight = 481600;
+int nPowPPHeight = 481620;
 
 bool CBlockHeader::IsFirstProgPow(int nHeight) const {
     return (IsProgPow(nHeight) && nHeight == nPowPPHeight);
@@ -31,8 +31,8 @@ bool CBlockHeader::IsProgPow(int nHeight) const {
 uint256 CBlockHeader::GetPoWHash(int nHeight) const
 {
     uint256 powHash;
-    uint256 mix_hash;
     if (nHeight == nPowPPHeight) {
+        uint256 mix_hash = Params().GetConsensus().powLimit;
         powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
     } else if (IsProgPow(nHeight)) {
         powHash = progpow_hash_light(GetProgPowHeader());

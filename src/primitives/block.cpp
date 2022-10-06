@@ -32,7 +32,6 @@ uint256 CBlockHeader::GetPoWHash(int nHeight) const
 {
     uint256 powHash;
     if (nHeight == nPowPPHeight) {
-        uint256 mix_hash = Params().GetConsensus().powLimit;
         powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
     } else if (IsProgPow(nHeight)) {
         powHash = progpow_hash_light(GetProgPowHeader());

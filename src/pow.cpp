@@ -289,7 +289,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
 
     // Hardcode diff at progpow switchover (asic -> gpu)
-    if (pindexLast->nHeight + 1 == params.nPowPPHeight + 1) {
+    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
         return 0x1d016e81;
     }
 

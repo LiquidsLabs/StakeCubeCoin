@@ -275,25 +275,25 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     // BTC diff
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
-        LogPrintf("BTC Set\n");
+        LogPrintf("BTC Set \n");
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
     // KimotoGravityWell
     if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
-        LogPrintf("KGW Set\n");
+        LogPrintf("KGW Set \n");
         return KimotoGravityWell(pindexLast, params);
     }
 
     // DarkGravityWave
     if (pindexLast->nHeight + 1 < params.nPowPPHeight) {
-        LogPrintf("DGW Set\n");
+        LogPrintf("DGW Set \n");
         return DarkGravityWave(pindexLast, params);
     }
 
     // Hardcode diff at progpow switchover (asic -> gpu)
-    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
-        LogPrintf("ProgPow 1st diff Set\n");
+    if (pindexLast->nHeight == params.nPowPPHeight) {
+        LogPrintf("ProgPow 1st diff Set \n");
         return 0x1d016e81;
     }
 
@@ -346,11 +346,6 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bool fNegative;
     bool fOverflow;
     arith_uint256 bnTarget;
-
-    // Accept the progpow hard fork block no matter the diff
-    if (nHeight == params.nPowPPHeight || nHeight == params.nPowPPHeight - 1) {
-        return true;
-    }
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 

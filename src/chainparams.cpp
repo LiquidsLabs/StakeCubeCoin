@@ -196,7 +196,7 @@ public:
         consensus.fPowNoRetargeting            = false;
         consensus.nPowKGWHeight                = 1;
         consensus.nPowDGWHeight                = 2;
-        consensus.nPowPPHeight                 = 481725; // Prog PoW | Note: change also in primitives/block.cpp
+        consensus.nPowPPHeight                 = 481750; // Prog PoW | Note: change also in primitives/block.cpp
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
 

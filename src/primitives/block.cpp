@@ -30,7 +30,7 @@ bool CBlockHeader::IsProgPow(int nHeight) const {
 
 uint256 CBlockHeader::GetPoWHash(int nHeight) const
 {
-    uint256 powHash;
+    uint256 powHash, mix_hash;
     if (nHeight == nPowPPHeight) {
         powHash = progpow_hash_full(GetProgPowHeader(), mix_hash);
     } else if (IsProgPow(nHeight)) {

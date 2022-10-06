@@ -3618,7 +3618,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 {
     int nHeight = block.nHeight;
 
-    if((nHeight >= consensusParams.nPowPPHeight) && ((block.nNonce64 == nullptr) || (block.nNonce64 == 0))) {
+    if(nHeight >= consensusParams.nPowPPHeight && block.nNonce64 == 0) {
         return state.DoS(50, false, REJECT_INVALID, "non-prog-pow", false, "prog pow enabled, no more headers past");
     }
 

@@ -36,7 +36,7 @@ extern "C" {
  * See "./lib/ethash/ethash.cpp" for increase size(s)
  */
 
-#define ETHASH_EPOCH_LENGTH 3240
+#define ETHASH_EPOCH_LENGTH 1300
 #define ETHASH_LIGHT_CACHE_ITEM_SIZE 64
 #define ETHASH_FULL_DATASET_ITEM_SIZE 128
 #define ETHASH_NUM_DATASET_ACCESSES 64

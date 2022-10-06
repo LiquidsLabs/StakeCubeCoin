@@ -4166,6 +4166,8 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
     // begin tx and let it rollback
     auto dbTx = evoDb->BeginTransaction();
 
+    LogPrintf("TestBlockValidity nBits: %i\n", block.nBits);
+
     // NOTE: CheckBlockHeader is called by CheckBlock
     if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
         return error("%s: Consensus::ContextualCheckBlockHeader: %s", __func__, FormatStateMessage(state));

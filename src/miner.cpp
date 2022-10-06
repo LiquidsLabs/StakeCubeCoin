@@ -222,6 +222,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblock->nNonce         = 0;
     pblock->nNonce64       = 0;
     pblock->nHeight        = nHeight;
+    pblock->mixHash        = uint256();
     pblocktemplate->nPrevBits = pindexPrev->nBits;
     pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(*pblock->vtx[0]);
 

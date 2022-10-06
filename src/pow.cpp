@@ -275,21 +275,25 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     // BTC diff
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
+        LogPrintf("BTC Set");
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
     // KimotoGravityWell
     if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
+        LogPrintf("KGW Set");
         return KimotoGravityWell(pindexLast, params);
     }
 
     // DarkGravityWave
     if (pindexLast->nHeight + 1 < params.nPowPPHeight) {
+        LogPrintf("DGW Set");
         return DarkGravityWave(pindexLast, params);
     }
 
     // Hardcode diff at progpow switchover (asic -> gpu)
     if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
+        LogPrintf("ProgPow 1st diff Set");
         return 0x1d016e81;
     }
 
@@ -309,7 +313,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             return bnNew.GetCompact();
         }
     }
-
+    LogPrintf("Progpow selected");
     return ProgPow(pindexLast, pblock, params); //set for progpow but can set later to replace DGW
 }
 

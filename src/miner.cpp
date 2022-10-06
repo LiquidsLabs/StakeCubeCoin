@@ -219,6 +219,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
+    LogPrintf("Fill header Block nBits: %i\n", pblock->nBits);
     if(nHeight == chainparams.GetConsensus().nPowPPHeight)
         pblock->nBits = 0x1d016e81;
     pblock->nNonce         = 0;

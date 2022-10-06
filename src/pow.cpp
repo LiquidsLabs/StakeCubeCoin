@@ -313,7 +313,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             return bnNew.GetCompact();
         }
     }
-    LogPrintf("Progpow selected");
+    LogPrintf("Progpow selected\n");
     return ProgPow(pindexLast, pblock, params); //set for progpow but can set later to replace DGW
 }
 

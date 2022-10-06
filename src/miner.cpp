@@ -219,6 +219,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
     pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
+    if(nHeight == chainparams.GetConsensus().nPowPPHeight)
+        pblock->nBits = 0x1d016e81;
     pblock->nNonce         = 0;
     pblock->nNonce64       = 0;
     pblock->nHeight        = nHeight;

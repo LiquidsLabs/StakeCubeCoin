@@ -3756,11 +3756,9 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         if (abs(n1-n2) > n1*0.5)
             return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                             REJECT_INVALID, "bad-diffbits");
-    } else if (nHeight == params.GetConsensus().nPowPPHeight) {
-        return true;
     } else {
         unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-        LogPrintf("Block nBits: %i, nBitsExpected: %i\n", block.nBits, nBitsNext);   
+        LogPrintf("Block nBits: %i, nBitsExpected: %i\n", block.nBits, nBitsNext);
         if (block.nBits != nBitsNext)
             return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect proof of work at %d", nHeight));
     }

@@ -15,7 +15,7 @@
 // We already set in chainparams, but need to put here again as
 // we can't get chainActive/mapBlockIndex in the consensus library
 // (without disabling binary hardening)..
-int nPowPPHeight = 481575;
+int nPowPPHeight = 481600;
 
 bool CBlockHeader::IsFirstProgPow(int nHeight) const {
     return (IsProgPow(nHeight) && nHeight == nPowPPHeight);

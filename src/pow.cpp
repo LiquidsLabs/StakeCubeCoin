@@ -289,7 +289,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
 
     // Hardcode diff at progpow switchover (asic -> gpu)
-    if (pindexLast->nHeight + 1 == params.nPowPPHeight) {
+    if (pindexLast->nHeight + 1 == params.nPowPPHeight + 1) {
         return 0x1d016e81;
     }
 
@@ -309,12 +309,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             return bnNew.GetCompact();
         }
     }
-
-    /*unsigned int TimeDaySeconds = 60 * 60 * 24;
-    int64_t PastSecondsMin = TimeDaySeconds * 0.25; // 21600
-    int64_t PastSecondsMax = TimeDaySeconds * 7;// 604800
-    uint32_t PastBlocksMin = PastSecondsMin / params.nPowTargetSpacing; // 36 blocks
-    uint32_t PastBlocksMax = PastSecondsMax / params.nPowTargetSpacing; // 1008 blocks*/
 
     return ProgPow(pindexLast, pblock, params); //set for progpow but can set later to replace DGW
 }
@@ -349,7 +343,8 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bool fOverflow;
     arith_uint256 bnTarget;
 
-    if (nHeight == params.nPowPPHeight || nHeight == 480866) {
+    // Accept the progpow hard fork block no matter the diff
+    if (nHeight == params.nPowPPHeight || nHeight == params.nPowPPHeight + 1) {
         return true;
     }
 

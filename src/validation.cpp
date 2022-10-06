@@ -983,10 +983,10 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
 
     // Check the header
 
-    if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, block.nHeight))
-        return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+    if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, nHeight))
+        return error("ReadBlockFromDisk: Errors in block %i header at %s", nHeight, pos.ToString());
 
-return true;
+    return true;
 }
 
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams)
@@ -995,9 +995,6 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
     {
         LOCK(cs_main);
         blockPos = pindex->GetBlockPos();
-    }
-    if(pindex->nHeight == consensusParams.nPowPPHeight + 1){
-        return true;
     }
 
     if (!ReadBlockFromDisk(block, blockPos, consensusParams))
@@ -3621,10 +3618,6 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 {
     int nHeight = block.nHeight;
 
-    if (nHeight == consensusParams.nPowPPHeight || nHeight == consensusParams.nPowPPHeight + 1) {
-        return true;
-    }
-
     if (fCheckPOW) {
         uint256 final_hash;
         if (block.IsFirstProgPow(nHeight)) {
@@ -3654,11 +3647,6 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW, bool fCheckMerkleRoot)
 {
     // These are checks that are independent of context.
-
-    if (block.nHeight == Params().GetConsensus().nPowPPHeight || block.nHeight == Params().GetConsensus().nPowPPHeight + 1) {
-        return true;
-    }
-
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 
     if (block.fChecked)
@@ -3754,10 +3742,6 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
-    if (nHeight == Params().GetConsensus().nPowPPHeight) {
-        return true;
-    }
-
     // Check proof of work
     const Consensus::Params& consensusParams = params.GetConsensus();
     if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 2){
@@ -3769,7 +3753,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         if (abs(n1-n2) > n1*0.5)
             return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                             REJECT_INVALID, "bad-diffbits");
-    } else if (block.nHeight == params.GetConsensus().nPowPPHeight + 1) {
+    } else if (nHeight == params.GetConsensus().nPowPPHeight + 1) {
         return true;
     } else {
         if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
@@ -3815,7 +3799,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     AssertLockHeld(cs_main);
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
-    if(nHeight > consensusParams.nPowPPHeight) {
+    if(nHeight >= consensusParams.nPowPPHeight) {
         // once ProgPow always ProgPow
         bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
         if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
@@ -4164,10 +4148,6 @@ bool TestBlockValidity(CValidationState& state, const CChainParams& chainparams,
 {
     AssertLockHeld(cs_main);
     assert(pindexPrev && pindexPrev == ::ChainActive().Tip());
-
-    if (block.nHeight == Params().GetConsensus().nPowPPHeight || block.nHeight == Params().GetConsensus().nPowPPHeight + 1) {
-        return true;
-    }
 
     uint256 hash = block.GetHash();
     if (llmq::chainLocksHandler->HasConflictingChainLock(pindexPrev->nHeight + 1, hash)) {

@@ -291,6 +291,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return DarkGravityWave(pindexLast, params);
     }
 
+    // Hardcode diff at progpow switchover (asic -> gpu)
+    if (pindexLast->nHeight == params.nPowPPHeight) {
+        LogPrintf("ProgPow 1st diff Set \n");
+        return 0x1d016e81;
+    }
+
     // Note: GetNextWorkRequiredBTC has it's own special difficulty rule,
     // so we only apply this to post-BTC algos.
     if (params.fPowAllowMinDifficultyBlocks) {

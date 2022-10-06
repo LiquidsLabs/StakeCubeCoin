@@ -3760,7 +3760,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         return true;
     } else {
         unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+        if (block.nBits != nBitsNext)
             LogPrintf("Block nBits: %i, nBitsExpected: %i\n", block.nBits, nBitsNext);   
             return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, strprintf("incorrect proof of work at %d", nHeight));
     }

@@ -314,7 +314,9 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         }
     }
     LogPrintf("Progpow selected\n");
-    return ProgPow(pindexLast, pblock, params); //set for progpow but can set later to replace DGW
+    unsigned int ProgVar = ProgPow(pindexLast, pblock, params);
+    LogPrintf("Called from Validation ProgPow: %i", ProgVar);
+    return ProgVar; //set for progpow but can set later to replace DGW
 }
 
 // for DIFF_BTC only!

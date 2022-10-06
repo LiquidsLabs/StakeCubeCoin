@@ -344,7 +344,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     arith_uint256 bnTarget;
 
     // Accept the progpow hard fork block no matter the diff
-    if (nHeight == params.nPowPPHeight || nHeight == params.nPowPPHeight + 1) {
+    if (nHeight == params.nPowPPHeight || nHeight == params.nPowPPHeight - 1) {
         return true;
     }
 

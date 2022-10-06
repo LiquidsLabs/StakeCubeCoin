@@ -1931,18 +1931,17 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         return state.DoS(10, error("%s: conflicting with chainlock", __func__), REJECT_INVALID, "bad-chainlock");
     }
 
-    if(pindex->nHeight > chainparams.GetConsensus().nPowPPHeight) {
-        if (block.IsProgPow(pindex->nHeight) && !fJustCheck) {
-            if (block.nHeight >= progpow::epoch_length*2000)
-                return state.DoS(50, false, REJECT_INVALID, "invalid-progpow-epoch", false, "invalid epoch number");
+    if (block.IsProgPow(pindex->nHeight) && !fJustCheck) {
+        if (block.nHeight >= progpow::epoch_length*2000)
+            return state.DoS(50, false, REJECT_INVALID, "invalid-progpow-epoch", false, "invalid epoch number");
 
-            uint256 exp_mix_hash, final_hash;
-            final_hash = block.GetProgPowHashFull(exp_mix_hash);
-            if (exp_mix_hash != block.mix_hash) {
-                return state.DoS(50, false, REJECT_INVALID, "invalid-mixhash", false, "mix_hash validity failed");
-            }
+        uint256 exp_mix_hash, final_hash;
+        final_hash = block.GetProgPowHashFull(exp_mix_hash);
+        if (exp_mix_hash != block.mix_hash) {
+            return state.DoS(50, false, REJECT_INVALID, "invalid-mixhash", false, "mix_hash validity failed");
         }
     }
+
 
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == nullptr ? uint256() : pindex->pprev->GetBlockHash();
@@ -3618,7 +3617,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 {
     int nHeight = block.nHeight;
 
-    if(nHeight >= consensusParams.nPowPPHeight && block.nNonce64 == 0) {
+    if(nHeight >= consensusParams.nPowPPHeight && block.mix_hash.IsNull()) {
         return state.DoS(50, false, REJECT_INVALID, "non-prog-pow", false, "prog pow enabled, no more headers past");
     }
 
@@ -3803,15 +3802,14 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     AssertLockHeld(cs_main);
     const int nHeight = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
 
-    if(nHeight >= consensusParams.nPowPPHeight) {
-        // once ProgPow always ProgPow
-        bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
-        if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
-            return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
+    // once ProgPow always ProgPow
+    bool ProgPowActive_context = (nHeight && pindexPrev) > consensusParams.nPowPPHeight;
+    if (ProgPowActive_context && block.nHeight < consensusParams.nPowPPHeight)
+        return state.Invalid(false, REJECT_INVALID, "bad-blk-progpow-state", "Cannot go back from ProgPOW");
 
-        if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
-            return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
-    }
+    if (block.IsProgPow(nHeight) && block.nHeight != nHeight)
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-progpow", "ProgPOW height doesn't match chain height");
+
 
     // Start enforcing BIP113 (Median Time Past) using versionbits logic.
     int nLockTimeFlags = 0;

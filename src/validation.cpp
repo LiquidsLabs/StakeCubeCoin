@@ -3616,7 +3616,7 @@ static bool FindUndoPos(CValidationState &state, int nFile, FlatFilePos &pos, un
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
-    int nHeight = block.nHeight;
+    int nHeight = ::ChainActive().Height() + 1;
 
     if(nHeight > consensusParams.nPowPPHeight && block.mix_hash.IsNull() && !block.IsProgPow(nHeight)) {
         return state.DoS(50, false, REJECT_INVALID, "non-prog-pow", false, "prog pow enabled, no more headers past");
@@ -3624,19 +3624,12 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 
     if (fCheckPOW) {
         uint256 final_hash;
-        LogPrintf("Block.nHeight: %i\n", block.nHeight);
-        if (block.IsProgPow(block.nHeight)) {
-            LogPrintf("we switched to progpow, getting pp light hash\n");
-            // If we use GetProgPowHashFull user may experience very slow header sync
-            // We use simplified function for header check and then will use full check in ConnectBlock()
-            // This won't make sync faster but it will give user a better experience
-            final_hash = block.GetProgPowHashLight();
-        } else {
-	        final_hash = block.GetPoWHash(block.nHeight);
-	    }
+        LogPrintf("Block.nHeight: %i\n", nHeight);
+        
+	    final_hash = block.GetPoWHash(nHeight);
 
         // Check proof of work matches claimed amount
-        if (!CheckProofOfWork(final_hash, block.nBits, consensusParams, block.nHeight))
+        if (!CheckProofOfWork(final_hash, block.nBits, consensusParams, nHeight))
             return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
     }
     // Check DevNet

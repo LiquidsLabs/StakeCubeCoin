@@ -217,7 +217,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     if (pindexLast->nHeight < params.nMinimumDifficultyBlocks) {
         return bnPowLimit.GetCompact();
     }
-    LogPrintf("pindexLast: %s, pblock->nHeight: %i\n", pindexLast->GetBlockHash().ToString(), pblock->nHeight);
+    LogPrintf("pindexLast: %i, pblock->nHeight: %i\n", pindexLast->nHeight, pblock->nHeight);
 
     // BTC diff
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {

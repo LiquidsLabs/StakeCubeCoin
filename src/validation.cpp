@@ -3632,7 +3632,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
             // This won't make sync faster but it will give user a better experience
             final_hash = block.GetProgPowHashLight();
         } else {
-	        final_hash = block.GetHash();
+	        final_hash = block.GetPoWHash(nHeight);
 	    }
 
         // Check proof of work matches claimed amount

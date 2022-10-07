@@ -982,7 +982,7 @@ bool ReadBlockFromDisk(CBlock& block, const FlatFilePos& pos, const Consensus::P
     }
 
     // Check the header
-    LogPrintf("ReadBlockFromDisk nHeight: %i", block.nHeight);
+    LogPrintf("ReadBlockFromDisk nHeight: %i\n", block.nHeight);
     if (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, consensusParams, nHeight))
         return error("ReadBlockFromDisk: Errors in block %i header at %s", nHeight, pos.ToString());
 
@@ -996,7 +996,7 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
         LOCK(cs_main);
         blockPos = pindex->GetBlockPos();
     }
-
+    LogPrintf("ReadBlockFromDisk nHeight: %i, pindex: %i\n", block.nHeight, pindex->nHeight);
     if (!ReadBlockFromDisk(block, blockPos, consensusParams))
         return false;
     if (block.GetHash() != pindex->GetBlockHash())

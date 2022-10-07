@@ -1937,6 +1937,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
         uint256 exp_mix_hash, final_hash;
         final_hash = block.GetProgPowHashFull(exp_mix_hash);
+        LogPrintf("Mix_hash: %i expected_mix: %i\n", block->mix_hash, exp_mix_hash);
         if (exp_mix_hash != block.mix_hash) {
             return state.DoS(50, false, REJECT_INVALID, "invalid-mixhash", false, "mix_hash validity failed");
         }

@@ -150,6 +150,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                     pblock->mix_hash = mix_hash;
                     break;
                 }
+                LogPrintf("Mining mix_hash: %i\n", mix_hash);
                 ++pblock->nNonce64;
                 --nMaxTries;
             }

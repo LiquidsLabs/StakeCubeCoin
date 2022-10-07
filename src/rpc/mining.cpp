@@ -150,7 +150,6 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                     pblock->mix_hash = mix_hash;
                     break;
                 }
-                pblock->mix_hash = mix_hash; //just cause testing
                 ++pblock->nNonce64;
                 --nMaxTries;
             }
@@ -358,7 +357,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
                         {
                             {"address", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "address for reward in coinbase (meaningful only if block solution is later submitted with pprpcsb)\n}"}
                         },
-                        "\"reward_address\""},                    
+                        "\"reward_address\""},
                 },
                 RPCResult{
             "{\n"
@@ -599,10 +598,10 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     bool fRewardAddressSet = false;
     if (request.params.size() >= 2) {
         /* TODO!!
-        * Setup bech32 address reading, 
-        * and normal to handle the reward 
+        * Setup bech32 address reading,
+        * and normal to handle the reward
         * address param for progpow.
-        * Subsequent code is from firo 
+        * Subsequent code is from firo
         * and needs rebasing
         */
         CTxDestination rewardAddress = DecodeDestination(request.params[1].get_str());
@@ -613,7 +612,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
         CMutableTransaction coinbaseTx(*pblock->vtx[0]);
         coinbaseTx.vout[0].scriptPubKey = GetScriptForDestination(rewardAddress);
         pblock->vtx[0] = MakeTransactionRef(CTransaction(coinbaseTx));
-        
+
         fRewardAddressSet = true;
     }
 

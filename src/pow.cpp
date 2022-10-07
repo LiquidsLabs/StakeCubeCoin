@@ -167,6 +167,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const Consens
 }
 
 unsigned int ProgPow(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params) {
+    LogPrintf("Starting ProgPow diff calc\n");
     const Consensus::Params& consensus = Params().GetConsensus();
 
     if (consensus.fPowNoRetargeting)
@@ -174,91 +175,35 @@ unsigned int ProgPow(const CBlockIndex* pindexLast, const CBlockHeader* pblock, 
 
     /* current difficulty formula, pivx - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
     const CBlockIndex* BlockLastSolved = pindexLast;
-    const CBlockIndex* BlockReading = pindexLast;
-    int64_t nActualTimespan = 0;
-    int64_t LastBlockTime = 0;
-    int64_t PastBlocksMin = 24;
-    int64_t PastBlocksMax = 24;
-    int64_t CountBlocks = 0;
-    arith_uint256 PastDifficultyAverage;
-    arith_uint256 PastDifficultyAveragePrev;
     const arith_uint256& powLimit = UintToArith256(consensus.powLimit);
 
-    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || BlockLastSolved->nHeight < PastBlocksMin) {
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || BlockLastSolved->nHeight < 24) {
+        LogPrintf("Im a broken block\n");
         return powLimit.GetCompact();
     }
 
-    if (pblock->IsProgPow(pblock->nHeight)) {
-        const arith_uint256& bnTargetLimit = UintToArith256(consensus.powLimit);
-        const int64_t& nTargetTimespan = consensus.nPowTargetTimespan;
+    const arith_uint256& bnTargetLimit = UintToArith256(consensus.powLimit);
+    const int64_t& nTargetTimespan = consensus.nPowTargetTimespan;
 
-        int64_t nActualSpacing = 0;
-        if (pindexLast->nHeight != 0)
-            nActualSpacing = pindexLast->GetBlockTime() - pindexLast->pprev->GetBlockTime();
-        if (nActualSpacing < 0)
-            nActualSpacing = 1;
-	    //if (nActualSpacing > consensus.nPowTargetSpacing*10)
-        //  nActualSpacing = consensus.nPowTargetSpacing*10;
+    int64_t nActualSpacing = 0;
+    if (pindexLast->nHeight != 0)
+        nActualSpacing = pindexLast->GetBlockTime() - pindexLast->pprev->GetBlockTime();
+    if (nActualSpacing < 0)
+        nActualSpacing = 1;
+    //if (nActualSpacing > consensus.nPowTargetSpacing*10)
+    //  nActualSpacing = consensus.nPowTargetSpacing*10;
 
-        // ppcoin: target change every block
-        // ppcoin: retarget with exponential moving toward target spacing
-        arith_uint256 bnNew;
-        bnNew.SetCompact(pindexLast->nBits);
+    // ppcoin: target change every block
+    // ppcoin: retarget with exponential moving toward target spacing
+    arith_uint256 bnNew;
+    bnNew.SetCompact(pindexLast->nBits);
 
-        int64_t nInterval = nTargetTimespan / consensus.nPowTargetSpacing;
-        bnNew *= ((nInterval - 1) * consensus.nPowTargetSpacing + nActualSpacing + nActualSpacing);
-        bnNew /= ((nInterval + 1) * consensus.nPowTargetSpacing);
+    int64_t nInterval = nTargetTimespan / consensus.nPowTargetSpacing;
+    bnNew *= ((nInterval - 1) * consensus.nPowTargetSpacing + nActualSpacing + nActualSpacing);
+    bnNew /= ((nInterval + 1) * consensus.nPowTargetSpacing);
 
-        if (bnNew <= 0 || bnNew > bnTargetLimit)
-            bnNew = bnTargetLimit;
-
-        return bnNew.GetCompact();
-    }
-
-    for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-        if (PastBlocksMax > 0 && i > PastBlocksMax) {
-            break;
-        }
-        CountBlocks++;
-
-        if (CountBlocks <= PastBlocksMin) {
-            if (CountBlocks == 1) {
-                PastDifficultyAverage.SetCompact(BlockReading->nBits);
-            } else {
-                PastDifficultyAverage = ((PastDifficultyAveragePrev * CountBlocks) + (arith_uint256().SetCompact(BlockReading->nBits))) / (CountBlocks + 1);
-            }
-            PastDifficultyAveragePrev = PastDifficultyAverage;
-        }
-
-        if (LastBlockTime > 0) {
-            int64_t Diff = (LastBlockTime - BlockReading->GetBlockTime());
-            nActualTimespan += Diff;
-        }
-        LastBlockTime = BlockReading->GetBlockTime();
-
-        if (BlockReading->pprev == NULL) {
-            assert(BlockReading);
-            break;
-        }
-        BlockReading = BlockReading->pprev;
-    }
-
-    arith_uint256 bnNew(PastDifficultyAverage);
-
-    int64_t _nTargetTimespan = CountBlocks * consensus.nPowTargetSpacing;
-
-    if (nActualTimespan < _nTargetTimespan / 3)
-        nActualTimespan = _nTargetTimespan / 3;
-    if (nActualTimespan > _nTargetTimespan * 3)
-        nActualTimespan = _nTargetTimespan * 3;
-
-    // Retarget
-    bnNew *= nActualTimespan;
-    bnNew /= _nTargetTimespan;
-
-    if (bnNew > powLimit) {
-        bnNew = powLimit;
-    }
+    if (bnNew <= 0 || bnNew > bnTargetLimit)
+        bnNew = bnTargetLimit;
 
     return bnNew.GetCompact();
 }
@@ -313,9 +258,9 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             return bnNew.GetCompact();
         }
     }
-    LogPrintf("Progpow selected\n");
+    LogPrintf("Progpow Set\n");
     unsigned int ProgVar = ProgPow(pindexLast, pblock, params);
-    LogPrintf("Called from Validation ProgPow: %i\n", ProgVar);
+    LogPrintf("GetNextWorkRequired ProgPow: %i\n", ProgVar);
     return ProgVar; //set for progpow but can set later to replace DGW
 }
 

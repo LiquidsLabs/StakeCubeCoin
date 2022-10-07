@@ -3624,10 +3624,11 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 
     if (fCheckPOW) {
         uint256 final_hash;
-        if (block.IsFirstProgPow(nHeight)) {
-	        uint256 mix_hash;
-            final_hash = block.GetProgPowHashFull(mix_hash);
-        } else if (block.IsProgPow(nHeight)) {
+        if (block.IsProgPow(nHeight)) {
+            LogPrintf("we switched to progpow, getting pp light hash");
+            // If we use GetProgPowHashFull user may experience very slow header sync
+            // We use simplified function for header check and then will use full check in ConnectBlock()
+            // This won't make sync faster but it will give user a better experience
             final_hash = block.GetProgPowHashLight();
         } else {
 	        final_hash = block.GetHash();

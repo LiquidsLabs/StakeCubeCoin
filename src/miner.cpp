@@ -226,7 +226,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     pblock->nNonce64       = 0;
     pblock->nHeight        = nHeight;
     pblock->mix_hash        = uint256();
-    LogPrintf("Miner mix_hash: %i\n", pblock->mix_hash);
+    LogPrintf("Miner mix_hash: %s\n", pblock->mix_hash.ToString());
     pblocktemplate->nPrevBits = pindexPrev->nBits;
     pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(*pblock->vtx[0]);
 

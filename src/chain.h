@@ -7,6 +7,7 @@
 #define BITCOIN_CHAIN_H
 
 #include <arith_uint256.h>
+#include <chainparams.h>
 #include <consensus/params.h>
 #include <flatfile.h>
 #include <primitives/block.h>
@@ -57,34 +58,34 @@ public:
         READWRITE(VARINT(obj.nTimeLast));
     }
 
-     void SetNull() {
-         nBlocks = 0;
-         nSize = 0;
-         nUndoSize = 0;
-         nHeightFirst = 0;
-         nHeightLast = 0;
-         nTimeFirst = 0;
-         nTimeLast = 0;
-     }
+    void SetNull() {
+        nBlocks = 0;
+        nSize = 0;
+        nUndoSize = 0;
+        nHeightFirst = 0;
+        nHeightLast = 0;
+        nTimeFirst = 0;
+        nTimeLast = 0;
+    }
 
-     CBlockFileInfo() {
-         SetNull();
-     }
+    CBlockFileInfo() {
+        SetNull();
+    }
 
-     std::string ToString() const;
+    std::string ToString() const;
 
-     /** update statistics (does not update nSize) */
-     void AddBlock(unsigned int nHeightIn, uint64_t nTimeIn) {
-         if (nBlocks==0 || nHeightFirst > nHeightIn)
-             nHeightFirst = nHeightIn;
-         if (nBlocks==0 || nTimeFirst > nTimeIn)
-             nTimeFirst = nTimeIn;
-         nBlocks++;
-         if (nHeightIn > nHeightLast)
-             nHeightLast = nHeightIn;
-         if (nTimeIn > nTimeLast)
-             nTimeLast = nTimeIn;
-     }
+    /** update statistics (does not update nSize) */
+    void AddBlock(unsigned int nHeightIn, uint64_t nTimeIn) {
+        if (nBlocks==0 || nHeightFirst > nHeightIn)
+            nHeightFirst = nHeightIn;
+        if (nBlocks==0 || nTimeFirst > nTimeIn)
+            nTimeFirst = nTimeIn;
+        nBlocks++;
+        if (nHeightIn > nHeightLast)
+            nHeightLast = nHeightIn;
+        if (nTimeIn > nTimeLast)
+            nTimeLast = nTimeIn;
+    }
 };
 
 enum BlockStatus: uint32_t {
@@ -178,6 +179,10 @@ public:
     uint32_t nBits{0};
     uint32_t nNonce{0};
 
+    // SCC - ProgPow
+    uint64_t nNonce64{0};
+    uint256 mix_hash{};
+
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId{0};
 
@@ -186,15 +191,24 @@ public:
 
     CBlockIndex()
     {
+	SetNull();
     }
 
-    explicit CBlockIndex(const CBlockHeader& block)
-        : nVersion{block.nVersion},
-          hashMerkleRoot{block.hashMerkleRoot},
-          nTime{block.nTime},
-          nBits{block.nBits},
-          nNonce{block.nNonce}
+    CBlockIndex(const CBlockHeader& block)
     {
+        SetNull();
+
+        nVersion       = block.nVersion;
+        hashMerkleRoot = block.hashMerkleRoot;
+        nTime          = block.nTime;
+        nBits          = block.nBits;
+        nNonce         = block.nNonce;
+
+        if (block.IsProgPow()) {
+            nHeight    = block.nHeight;
+            nNonce64   = block.nNonce64;
+            mix_hash   = block.mix_hash;
+        }
     }
 
     FlatFilePos GetBlockPos() const {
@@ -224,13 +238,51 @@ public:
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;
         block.nBits          = nBits;
-        block.nNonce         = nNonce;
+        if (block.IsProgPow()) {
+            block.nHeight    = nHeight;
+            block.nNonce64   = nNonce64;
+            block.mix_hash   = mix_hash;
+        } else {
+            block.nNonce         = nNonce;
+        }
         return block;
     }
 
     uint256 GetBlockHash() const
     {
         return *phashBlock;
+    }
+
+    uint256 GetBlockPoWHash() const
+    {
+        return GetBlockHeader().GetPoWHash(nHeight);
+    }
+
+    void SetNull()
+    {
+        phashBlock = nullptr;
+        pprev = nullptr;
+        pskip = nullptr;
+        nHeight = 0;
+        nFile = 0;
+        nDataPos = 0;
+        nUndoPos = 0;
+        nChainWork = arith_uint256();
+        nTx = 0;
+        nChainTx = 0;
+        nStatus = 0;
+        nSequenceId = 0;
+        nTimeMax = 0;
+
+        nVersion       = 0;
+        hashMerkleRoot = uint256();
+        nTime          = 0;
+        nBits          = 0;
+        nNonce         = 0;
+
+        // SCC - ProgPow
+        nNonce64       = 0;
+        mix_hash       = uint256();
     }
 
     /**
@@ -351,7 +403,13 @@ public:
         READWRITE(obj.hashMerkleRoot);
         READWRITE(obj.nTime);
         READWRITE(obj.nBits);
-        READWRITE(obj.nNonce);
+        if (obj.nTime > SCC_GEN_TIME && obj.nTime >= Params().GetConsensus().nPPSwitchTime) {
+            READWRITE(obj.nNonce64);
+            READWRITE(obj.mix_hash);
+         } else {
+            READWRITE(obj.nNonce);
+         }
+
     }
 
     uint256 GetBlockHash() const
@@ -364,7 +422,13 @@ public:
         block.hashMerkleRoot  = hashMerkleRoot;
         block.nTime           = nTime;
         block.nBits           = nBits;
-        block.nNonce          = nNonce;
+        if (block.IsProgPow()) {
+            block.nHeight    = nHeight;
+            block.nNonce64   = nNonce64;
+            block.mix_hash   = mix_hash;
+        } else {
+            block.nNonce     = nNonce;
+        }
         return block.GetHash();
     }
 

@@ -7,8 +7,12 @@
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
 #include <primitives/transaction.h>
+#include <consensus/params.h>
+#include "crypto/progpow.h"
 #include <serialize.h>
 #include <uint256.h>
+
+extern uint32_t nPPSwitchTime;
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
@@ -28,12 +32,37 @@ public:
     uint32_t nBits;
     uint32_t nNonce;
 
+    // SCC - ProgPow 
+    uint32_t nHeight;
+    uint64_t nNonce64;
+    uint256 mix_hash;
+
     CBlockHeader()
     {
         SetNull();
     }
 
-    SERIALIZE_METHODS(CBlockHeader, obj) { READWRITE(obj.nVersion, obj.hashPrevBlock, obj.hashMerkleRoot, obj.nTime, obj.nBits, obj.nNonce); }
+    bool IsProgPow() const;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        READWRITE(nVersion);
+        READWRITE(hashPrevBlock);
+        READWRITE(hashMerkleRoot);
+        READWRITE(nTime);
+        READWRITE(nBits);
+        // SCC - ProgPoW
+        // Return std 4byte, if ProgPoW return 8byte
+        if (IsProgPow()) {
+            READWRITE(nHeight);
+            READWRITE(nNonce64);
+            READWRITE(mix_hash);
+        } else {
+            READWRITE(nNonce);
+        }
+    }
 
     void SetNull()
     {
@@ -43,6 +72,10 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+        // SCC - ProgPow
+        nNonce64 = 0;
+        nHeight  = 0;
+        mix_hash.SetNull();
     }
 
     bool IsNull() const
@@ -52,10 +85,21 @@ public:
 
     uint256 GetHash() const;
 
+    uint256 GetHashFull(uint256& mix_hash) const;
+    uint256 GetPoWHash(int nHeight) const;
+
+    bool IsFirstProgPow() const;
+
+    CProgPowHeader GetProgPowHeader() const;
+    uint256 GetProgPowHeaderHash() const;
+    uint256 GetProgPowHashFull(uint256& mix_hash) const;
+    uint256 GetProgPowHashLight() const;
+
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;
     }
+
 };
 
 
@@ -101,6 +145,13 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        if (IsProgPow()) {
+            block.nHeight    = nHeight;
+            block.nNonce64   = nNonce64;
+            block.mix_hash   = mix_hash;
+        } else {
+            block.nNonce     = nNonce;
+        }
         return block;
     }
 

@@ -1,5 +1,5 @@
 ---
-name: "scc-osx-0.17"
+name: "scc-osx-3.3.0"
 enable_cache: true
 distro: "ubuntu"
 suites:

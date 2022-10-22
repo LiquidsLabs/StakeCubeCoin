@@ -8,6 +8,7 @@
 
 #include <chainparamsseeds.h>
 #include <consensus/merkle.h>
+#include "consensus/params.h"
 #include <llmq/params.h>
 #include <tinyformat.h>
 #include <util/ranges.h>
@@ -190,7 +191,7 @@ public:
         /** PoW **/
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // ~uint256(0) >> 20
         consensus.nPowTargetTimespan           = 24 * 60 * 60; // SCC: 1 day
-        consensus.nPowTargetSpacing            = 2 * 60; // 2 minutes  
+        consensus.nPowTargetSpacing            = 2 * 60; // 2 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting            = false;
         consensus.nPowKGWHeight                = 1;
@@ -198,6 +199,10 @@ public:
         consensus.nRuleChangeActivationThreshold = 1512; // 75% of 2016
         consensus.nMinerConfirmationWindow       = 2016; // nPowTargetTimespan / nPowTargetSpacing
 
+        /** Prog PoW **/
+        consensus.nPPSwitchHeight = 490000; //placeholder set to disconnect peers.
+        consensus.nPPSwitchTime = 1666350000; // Friday, October 21, 2022 11:00:00 AM GMT
+        consensus.nInitialPPDifficulty = 0x1b1774cd;    // 40GH/s
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit        = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
@@ -246,10 +251,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0020].nFalloffCoeff   = 5; // this corresponds to 10 periods
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000007c4a7a82d260897efa");  // Blk 352,204
+        consensus.nMinimumChainWork = uint256S("0000000000000000000000000000000000000000000000902015d2c183b40ba9");  // Blk 484,917
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0000000000000d5b73d6730cc0227f5291c76a05dda08328e70b0bd4ff1e0a59"); // Blk 352,204
+        consensus.defaultAssumeValid = uint256S("00000000000005362a4e37301e6095644fcfb0dc6ad1541fe2354ff69e9789de"); // Blk 484,917
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -384,8 +389,14 @@ public:
                 // Post-Rebase Minor Fork blocks
                 {352202, uint256S("0000000000001a7b4d26b3870ae73857a691b940e91db367496749f9f51d14f3")},
                 {352203, uint256S("0000000000000df4086a9ce561db70c9fc48e7ee10107d6df56accee3099a526")},
-                {352204, uint256S("0000000000000d5b73d6730cc0227f5291c76a05dda08328e70b0bd4ff1e0a59")}
-                // Some future update...
+                {352204, uint256S("0000000000000d5b73d6730cc0227f5291c76a05dda08328e70b0bd4ff1e0a59")},
+                // Added in ProgPoW update
+                {372200, uint256S("00000000000008a459f0c6dd16c81b5e550e2cf184b5d3c72762cccbdadc13d9")},
+                {392200, uint256S("00000000000009cd8e131255334b89faeac1f677793f82b6d40ccafcb5c8f8eb")},
+                {412200, uint256S("0000000000001bf066316f9a8da865f3e16f4770d3a36fd007253d0c07599c65")},
+                {432200, uint256S("0000000000004914b4bf906e1e1b869338cdd61b249cab868d4b8640e1dee35c")},
+                {452200, uint256S("0000000000001aacd70727211dbac4a888d34f423497da206d1cad9492ec4594")},
+                {472200, uint256S("00000000000003163bd40055b06f813615f104e2f67f910bc5814d731f9afa20")}
             }
         };
 
@@ -420,25 +431,31 @@ public:
         consensus.nGovernanceMinQuorum = 1;
         consensus.nGovernanceFilterElements = 500;
         consensus.nMasternodeMinimumConfirmations = 1;
-        consensus.BIP34Height = 76;
-        consensus.BIP34Hash = uint256S("000008ebb1db2598e897d17275285767717c6acfeac4c73def49fbea1ddcbcb6");
-        consensus.BIP65Height = 2431; // 0000039cf01242c7f921dcb4806a5994bc003b48c1973ae0c89b67809c2bb2ab
-        consensus.BIP66Height = 2075; // 0000002acdd29a14583540cb72e1c5cc83783560e38fa7081495d474fe1671f7
-        consensus.DIP0001Height = 5500;
-        consensus.DIP0003Height = 7000;
-        consensus.DIP0003EnforcementHeight = 7300;
-        consensus.DIP0003EnforcementHash = uint256S("00000055ebc0e974ba3a3fb785c5ad4365a39637d4df168169ee80d313612f8f");
-        consensus.DIP0008Height = 78800; // 000000000e9329d964d80e7dab2e704b43b6bd2b91fea1e9315d38932e55fb55
-        consensus.MinBIP9WarningHeight = 80816;  // dip8 activation height + miner confirmation window
+        consensus.BIP34Height = 1;
+        consensus.BIP34Hash = uint256S("00");
+        consensus.BIP65Height = 1; // 0000039cf01242c7f921dcb4806a5994bc003b48c1973ae0c89b67809c2bb2ab
+        consensus.BIP66Height = 1; // 0000002acdd29a14583540cb72e1c5cc83783560e38fa7081495d474fe1671f7
+        consensus.DIP0001Height = 700;
+        consensus.DIP0003Height = 700;
+        consensus.DIP0003EnforcementHeight = 700;
+        consensus.DIP0003EnforcementHash = uint256S("00");
+        consensus.DIP0008Height = 705; // 000000000e9329d964d80e7dab2e704b43b6bd2b91fea1e9315d38932e55fb55
+        consensus.MinBIP9WarningHeight = 700;  // dip8 activation height + miner confirmation window
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // ~uint256(0) >> 20
         consensus.nPowTargetTimespan = 24 * 60 * 60; // SCC: 1 day
         consensus.nPowTargetSpacing = 2 * 60; // SCC: 2 minutes
-        consensus.fPowAllowMinDifficultyBlocks = true;
+        consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-        consensus.nPowKGWHeight = 4002; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
-        consensus.nPowDGWHeight = 4002; // TODO: make sure to drop all spork6 related code on next testnet reset
+        consensus.nPowKGWHeight = 2; // nPowKGWHeight >= nPowDGWHeight means "no KGW"
+        consensus.nPowDGWHeight = 1; // TODO: make sure to drop all spork6 related code on next testnet reset
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+
+        /** Prog PoW **/
+        consensus.nPPSwitchHeight = INT_MAX;
+        consensus.nPPSwitchTime = 1665238500;      // Sat Oct 08 2022 14:15:00 GMT+0000
+        consensus.nInitialPPDifficulty = 0x1d016e81;    // 10MH/s
+
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
@@ -450,7 +467,7 @@ public:
 
         // Deployment of DIP0001
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].bit = 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nStartTime = 1544655600; // Dec 13th, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nStartTime = 1638316800; // Dec 13th, 2018
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].nThresholdStart = 50; // 50% of 100
@@ -464,14 +481,14 @@ public:
 
         // Deployment of DIP0003
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].bit = 3;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = 1544655600; // Dec 13th, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = 1638316800;// Dec 13th, 2018
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nThresholdStart = 50; // 50% of 100
 
         // Deployment of DIP0008
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].bit = 4;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nStartTime = 1553126400; // Mar 21st, 2019
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nStartTime = 1638316800; // Mar 21st, 2019
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0008].nThresholdStart = 50; // 50% of 100
@@ -606,6 +623,12 @@ public:
         consensus.nPowDGWHeight = 0;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+
+        //** Prog PoW **/
+        // this can be overridden with either -ppswitchtime or -ppswitchtimefromnow flags
+        consensus.nPPSwitchTime = INT_MAX;
+        consensus.nInitialPPDifficulty = 0x2000ffff;
+
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008

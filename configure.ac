@@ -1,6 +1,6 @@
 AC_PREREQ([2.69])
 define(_CLIENT_VERSION_MAJOR, 3)
-define(_CLIENT_VERSION_MINOR, 2)
+define(_CLIENT_VERSION_MINOR, 3)
 define(_CLIENT_VERSION_REVISION, 0)
 define(_CLIENT_VERSION_BUILD, 0)
 define(_CLIENT_VERSION_RC, 0)
@@ -1321,8 +1321,8 @@ fi
 
 if test x$use_boost = xyes; then
 
+		
 BOOST_LIBS="$BOOST_LDFLAGS $BOOST_FILESYSTEM_LIB $BOOST_THREAD_LIB"
-
 
 dnl If boost (prior to 1.57) was built without c++11, it emulated scoped enums
 dnl using c++98 constructs. Unfortunately, this implementation detail leaked into

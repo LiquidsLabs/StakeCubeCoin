@@ -38,7 +38,7 @@ void InitLLMQSystem(CEvoDB& evoDb, bool unitTests, bool fWipe)
 
     // NOTE: we use this only to wipe the old db, do NOT use it for anything else
     // TODO: remove it in some future version
-    auto llmqDbTmp = std::make_unique<CDBWrapper>(unitTests ? "" : (GetDataDir() / "llmq"), 1 << 20, unitTests, true);
+    auto llmqDbTmp = std::make_unique<CDBWrapper>(unitTests ? "" : (GetDataDir() / "llmq"), 8 << 20, unitTests, true);
 }
 
 void DestroyLLMQSystem()

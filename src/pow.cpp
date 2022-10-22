@@ -12,6 +12,8 @@
 
 #include <math.h>
 
+arith_uint256 bnProofOfWorkProgPowLimit(~arith_uint256(0) >> 28);
+
 unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const Consensus::Params& params) {
     const CBlockIndex *BlockLastSolved = pindexLast;
     const CBlockIndex *BlockReading = pindexLast;
@@ -164,6 +166,48 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
    return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
 }
 
+unsigned int GetNextWorkRequiredSCC(const CBlockIndex* pindexLast, const CBlockHeader* pblock)
+{
+    const Consensus::Params& consensus = Params().GetConsensus();
+
+    if (consensus.fPowNoRetargeting)
+        return pindexLast->nBits;
+
+    /* current difficulty formula, pivx - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
+    const CBlockIndex* BlockLastSolved = pindexLast;
+    int64_t PastBlocksMin = 24;
+    const arith_uint256& powLimit = UintToArith256(consensus.powLimit);
+
+    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || BlockLastSolved->nHeight < PastBlocksMin) {
+        return powLimit.GetCompact();
+    }
+
+    const arith_uint256& bnTargetLimit = UintToArith256(consensus.powLimit);
+    const int64_t& nTargetTimespan = consensus.nPowTargetTimespan;
+
+    int64_t nActualSpacing = 0;
+    if (pindexLast->nHeight != 0)
+        nActualSpacing = pindexLast->GetBlockTime() - pindexLast->pprev->GetBlockTime();
+    if (nActualSpacing < 0)
+        nActualSpacing = 1;
+    //if (nActualSpacing > consensus.nPowTargetSpacing*10)
+    //  nActualSpacing = consensus.nPowTargetSpacing*10;
+
+    // ppcoin: target change every block
+    // ppcoin: retarget with exponential moving toward target spacing
+    arith_uint256 bnNew;
+    bnNew.SetCompact(pindexLast->nBits);
+
+    int64_t nInterval = nTargetTimespan / consensus.nPowTargetSpacing;
+    bnNew *= ((nInterval - 1) * consensus.nPowTargetSpacing + nActualSpacing + nActualSpacing);
+    bnNew /= ((nInterval + 1) * consensus.nPowTargetSpacing);
+
+    if (bnNew <= 0 || bnNew > bnTargetLimit)
+        bnNew = bnTargetLimit;
+
+    return bnNew.GetCompact();
+}
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
@@ -171,35 +215,25 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
 
     // this is only active on devnets
-    if (pindexLast->nHeight < params.nMinimumDifficultyBlocks) {
-        return bnPowLimit.GetCompact();
-    }
-
     if (pindexLast->nHeight + 1 < params.nPowKGWHeight) {
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
     }
 
-    // Note: GetNextWorkRequiredBTC has it's own special difficulty rule,
-    // so we only apply this to post-BTC algos.
-    if (params.fPowAllowMinDifficultyBlocks) {
-        // recent block is more than 2 hours old
-        if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + 2 * 60 * 60) {
-            return bnPowLimit.GetCompact();
-        }
-        // recent block is more than 10 minutes old
-        if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing * 4) {
-            arith_uint256 bnNew = arith_uint256().SetCompact(pindexLast->nBits) * 10;
-            if (bnNew > bnPowLimit) {
-                return bnPowLimit.GetCompact();
-            }
-            return bnNew.GetCompact();
-        }
-    }
-
+    // KimotoGravityWell
     if (pindexLast->nHeight + 1 < params.nPowDGWHeight) {
         return KimotoGravityWell(pindexLast, params);
     }
 
+    /* ProgPow */
+    // Make transition smooth from x11 to ProgPow:
+    // If we hit the nPPSwitchTime but no block generated yet we set a low diff.
+    // After the time of last block is older than nPPSwitchTime (i.e. first PP block)
+    // ...this will be ignored and continues with GetNextWorkRequiredSCC
+    if (pblock->IsProgPow()) {
+        if (pindexLast->nTime <= params.nPPSwitchTime)
+            return params.nInitialPPDifficulty;
+        return GetNextWorkRequiredSCC(pindexLast, pblock);
+    }
     return DarkGravityWave(pindexLast, params);
 }
 

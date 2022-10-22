@@ -1888,6 +1888,7 @@ bool static ProcessHeadersMessage(CNode *pfrom, CConnman *connman, const std::ve
         uint256 hashLastBlock;
         for (const CBlockHeader& header : headers) {
             if (!hashLastBlock.IsNull() && header.hashPrevBlock != hashLastBlock) {
+		LogPrint(BCLog::NET, "hashPrevBlock=%s, hashLastBlock=%s", header.hashPrevBlock.ToString(), hashLastBlock.ToString());
                 Misbehaving(pfrom->GetId(), 20, "non-continuous headers sequence");
                 return false;
             }
@@ -2453,6 +2454,17 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
 
         if (nVersion < MIN_PEER_PROTO_VERSION) {
+            // disconnect from peers older than this proto version
+            LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
+            if (enable_bip61) {
+                connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
+                                   strprintf("Version must be %d or greater", MIN_PEER_PROTO_VERSION)));
+            }
+            pfrom->fDisconnect = true;
+            return false;
+        }
+
+        if (pindexBestHeader->nHeight >= Params().GetConsensus().nPPSwitchHeight && nVersion < MIN_PP_PROTO_VERSION) {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
             if (enable_bip61) {
